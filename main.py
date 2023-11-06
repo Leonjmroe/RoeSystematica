@@ -1,14 +1,14 @@
-from binance_api import binance
+from binance_api import binance_api
 
 
-account_info = binance.get_account_info()
-if account_info:
-    print(account_info)
+balances = binance_api.get_balance()
+for account in balances:
+	if account['asset'] == 'USDT':
+		print('Balance: $' + "{:,}".format(round(float(account['balance']))))
 
-balance = binance.get_asset_balance(asset='BTC')
-if balance:
-    print(balance)
 
-tickers = binance.get_all_tickers()
-if tickers:
-    print(tickers)
+# open_orders = binance_api.get_open_orders(symbol='BTCUSDT')
+# all_orders = binance_api.get_all_orders(symbol='BTCUSDT')
+# cancel = binance_api.cancel_order(symbol='BTCUSDT', order_id='order_id_here')
+
+# order = binance_api.create_order(symbol='BTCUSDT', side='BUY', type='LIMIT', quantity=1, price='35034')
