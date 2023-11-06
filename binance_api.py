@@ -1,5 +1,4 @@
 import os
-import binance
 from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceRequestException
@@ -43,20 +42,5 @@ class BinanceAPI:
 load_dotenv()
 api_key = os.getenv('API_KEY_TEST')
 api_secret = os.getenv('API_SECRET_TEST')
+
 binance = BinanceAPI(api_key, api_secret)
-
-# Get account information
-account_info = binance.get_account_info()
-if account_info:
-    print(account_info)
-
-# Get balance for a specific asset
-balance = binance.get_asset_balance(asset='BTC')
-if balance:
-    print(balance)
-
-# Get all tickers
-tickers = binance.get_all_tickers()
-if tickers:
-    print(tickers[0])
-
