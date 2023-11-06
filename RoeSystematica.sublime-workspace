@@ -1,0 +1,716 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"bin",
+				"bin/env"
+			],
+			[
+				"vide",
+				"video_1"
+			],
+			[
+				"bac",
+				"background-image"
+			],
+			[
+				"font",
+				"font-size:"
+			],
+			[
+				"margin",
+				"margin-top:"
+			],
+			[
+				"w",
+				"width"
+			],
+			[
+				"pa",
+				"padding"
+			],
+			[
+				"mar",
+				"margin-top:"
+			],
+			[
+				"map",
+				"map((email) =>"
+			],
+			[
+				"flex",
+				"flex-direction:"
+			],
+			[
+				"fle",
+				"flex-direction:"
+			],
+			[
+				"on",
+				"onChange"
+			],
+			[
+				"timeout",
+				"timeout = setTimeout(() => {"
+			],
+			[
+				"win",
+				"window.location."
+			],
+			[
+				"pad",
+				"padding"
+			],
+			[
+				"d",
+				"default"
+			],
+			[
+				"function",
+				"function init() {"
+			],
+			[
+				"func",
+				"function"
+			],
+			[
+				"con",
+				"const styles ="
+			],
+			[
+				"i",
+				"ifmain\tif __name__ == '__main__'"
+			],
+			[
+				"back",
+				"background-color:"
+			],
+			[
+				"marg",
+				"margin-bottom"
+			],
+			[
+				"alig",
+				"align-items"
+			],
+			[
+				"al",
+				"align-content"
+			],
+			[
+				"border",
+				"border-radius:"
+			],
+			[
+				"fo",
+				"font-size"
+			],
+			[
+				"q",
+				"qty_extra_large"
+			],
+			[
+				"qt",
+				"qty_extra_large"
+			],
+			[
+				"qty",
+				"qty_extra_large"
+			],
+			[
+				"ap",
+				"append"
+			],
+			[
+				"cons",
+				"console"
+			],
+			[
+				"ret",
+				"return Response(serializer."
+			],
+			[
+				"if",
+				"ImageField"
+			],
+			[
+				"left",
+				"leftSize"
+			],
+			[
+				"s",
+				"stock_check"
+			],
+			[
+				"stoc",
+				"stock_check"
+			],
+			[
+				"coun",
+				"count_extra_large"
+			],
+			[
+				"size",
+				"size_select"
+			],
+			[
+				"item",
+				"items_to_del"
+			],
+			[
+				"nag",
+				"navigate"
+			],
+			[
+				"clie",
+				"clientSecret"
+			],
+			[
+				"payme",
+				"payment_intent"
+			],
+			[
+				"pay",
+				"paymentMethod"
+			],
+			[
+				"ge",
+				"getElementsByClassName"
+			],
+			[
+				"cli",
+				"client_secret"
+			],
+			[
+				"bor",
+				"border"
+			],
+			[
+				"er",
+				"error_count"
+			],
+			[
+				"get",
+				"getElementsByName"
+			],
+			[
+				"output",
+				"outputDir"
+			],
+			[
+				"add",
+				"add_item"
+			],
+			[
+				"sum",
+				"summary_title"
+			],
+			[
+				"bo",
+				"border"
+			],
+			[
+				"bord",
+				"border"
+			],
+			[
+				"m",
+				"margin-top"
+			],
+			[
+				"margi",
+				"margin-top"
+			],
+			[
+				"loc",
+				"locations"
+			],
+			[
+				"ind",
+				"indigo"
+			],
+			[
+				"margin-",
+				"margin-left"
+			],
+			[
+				"f",
+				"flex-direction"
+			],
+			[
+				"use",
+				"useContext"
+			],
+			[
+				"app",
+				"append"
+			],
+			[
+				"cat",
+				"category"
+			],
+			[
+				"wo",
+				"word-wrap"
+			],
+			[
+				"text-w",
+				"text-overflow"
+			],
+			[
+				"des",
+				"description"
+			],
+			[
+				"min",
+				"min-height"
+			],
+			[
+				"ba",
+				"background-color"
+			],
+			[
+				"in",
+				"inline"
+			],
+			[
+				"ma",
+				"margin-bottom"
+			],
+			[
+				"fon",
+				"font-weight"
+			],
+			[
+				"to",
+				"toUpperCase"
+			],
+			[
+				"fl",
+				"flex-direction"
+			],
+			[
+				"mart",
+				"margin-right"
+			],
+			[
+				"bacl",
+				"background-color"
+			],
+			[
+				"backg",
+				"background-color"
+			],
+			[
+				"getElemen",
+				"getElementsByName"
+			],
+			[
+				"getEleme",
+				"getElementById"
+			],
+			[
+				"backgroun",
+				"background-color"
+			],
+			[
+				"dis",
+				"display"
+			],
+			[
+				"c",
+				"console"
+			],
+			[
+				"img",
+				"isModifiedGlobal"
+			],
+			[
+				"onc",
+				"onClick"
+			],
+			[
+				"pop",
+				"populateFields"
+			],
+			[
+				"co",
+				"console"
+			],
+			[
+				"b",
+				"border"
+			],
+			[
+				"setTi",
+				"setTimeout"
+			],
+			[
+				"mat",
+				"margin-left"
+			],
+			[
+				"cre",
+				"createItems"
+			],
+			[
+				"price",
+				"price_check"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"terminus",
+				"Terminus: Open Default Shell in Panel"
+			],
+			[
+				"pacl",
+				"Package Control: Install Package"
+			],
+			[
+				"copilo",
+				"Copilot: Sign Out"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Add Repository"
+			],
+			[
+				"package con",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				"VIRTUALENV",
+				"Build With: Python + Virtualenv"
+			],
+			[
+				"virtua",
+				"Build With: Python + Virtualenv"
+			],
+			[
+				"virtual",
+				"Build With: Python + Virtualenv"
+			],
+			[
+				"in",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 218.0,
+		"history":
+		[
+			"Package Control",
+			"package control"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/leon/Desktop/RoeSystematica"
+	],
+	"file_history":
+	[
+		"/Users/leon/Desktop/Alpha Production/RoeSystematica/.env",
+		"/Users/leon/Desktop/Alphas/.env",
+		"/Users/leon/Library/Application Support/Sublime Text/Packages/User/alpha_env",
+		"/Users/leon/Library/Application Support/Sublime Text/Packages/User/alpha_python_env",
+		"/Users/leon/Desktop/Projects/SignalGen/requirements.txt",
+		"/Users/leon/Desktop/Projects/SignalGen/frontend/src/App.js",
+		"/Users/leon/Desktop/Projects/SignalGen/frontend/src/three/cylinder.js",
+		"/Users/leon/Desktop/Projects/SignalGen/backend/server/middleware.py",
+		"/Users/leon/Desktop/Projects/SignalGen/Procfile",
+		"/Users/leon/Desktop/Projects/1nceuk/1nceuk/frontend/src/components/store_admin/admin_actions.js",
+		"/Users/leon/Desktop/Projects/1nceuk/1nceuk/frontend/src/components/store_admin/store_admin.js",
+		"/Users/leon/Desktop/Projects/1nceuk/1nceuk/backend/server/settings.py",
+		"/Users/leon/Desktop/Projects/1nceuk/1nceuk/backend/server/middleware.py",
+		"/Users/leon/Desktop/Projects/1nceuk/1nceuk/requirements.txt",
+		"/Users/leon/Desktop/SignalGen/frontend/src/three/cylinder.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/three/sphere.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/three.js/sphere.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/three.js/cylinder.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/three.js designs/sphere.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/App.js",
+		"/Users/leon/Desktop/SignalGen/backend/server/settings.py",
+		"/Users/leon/Desktop/SignalGen/backend/server/urls.py",
+		"/Users/leon/Desktop/SignalGen/frontend/src/EnergyCircle2.js",
+		"/Users/leon/Desktop/SignalGen/frontend/src/EnergyCircle.js",
+		"/Users/leon/Desktop/SignalGen/.env",
+		"/Users/leon/Desktop/SignalGen/.gitignore",
+		"/Users/leon/Desktop/SignalGen/Procfile",
+		"/Users/leon/Desktop/Quant Research/xbt alphas/60m_OBV_Alpha.py",
+		"/Users/leon/Desktop/Quant Research/xbt alphas/OBV_Divergence_Alpha.py",
+		"/Users/leon/Desktop/Projects/project 1nceuk/1nceuk/frontend/src/components/skating/skating.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/skating/skating.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/skating/skating.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/carousel.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/home.module.css",
+		"/Users/leon/projects/apps/1nceuk/backend/server/middleware.py",
+		"/Users/leon/projects/apps/1nceuk/backend/server/settings.py",
+		"/Users/leon/projects/apps/1nceuk/backend/server/views.py",
+		"/Users/leon/projects/apps/1nceuk/backend/server/urls.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store/itemTile.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store/tile.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store/store.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/collections/collections.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/collections/collections.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/basket/basket.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/about/about.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/basket/basket_tile.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/item_preview/item_preview.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/storages.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/App.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment/payment.js",
+		"/Users/leon/projects/apps/1nceuk/.env",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/designs/designs.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/designs/designs.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/core.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/item_preview/item_preview.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store/store.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/.env",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/views.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment/payment_form.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/circles.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/package.json",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store_admin/store_admin.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store_admin/store_admin.module.css",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/models.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/accounts/apps.py",
+		"/Users/leon/projects/apps/1nceuk/requirements.txt",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment/payment.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/about/about.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/contact/contact.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/public/index.html",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/checkout.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment/post_payment.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/images/Logo3.png",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/images/carousel_img_2.jpg",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/views.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/serializers.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/models.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/serializers.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/checkout.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/urls.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/mail/views.py",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/mail/models.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/contact/contact.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/mail/urls.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/core.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/App.module.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store_admin/admin_actions.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/migrations/0005_auto_20230516_2127.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/countries.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/items/urls.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/item_preview/size_selector.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment/success.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/public/email.html",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/mail/apps.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/index.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/node_modules/@stripe/react-stripe-js/src/index.ts",
+		"/Users/leon/projects/apps/1nceuk/frontend/node_modules/@stripe/react-stripe-js/dist/react-stripe.d.ts",
+		"/Users/leon/projects/apps/1nceuk/frontend/node_modules/@stripe/react-stripe-js/dist/react-stripe.esm.d.ts",
+		"/Users/leon/projects/apps/1nceuk/frontend/node_modules/@stripe/stripe-js/types/stripe-js/elements/express-checkout.d.ts",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/state_management/context.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/state_management/reducer.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/checkout_form.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/build/index.html",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/accounts/urls.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/login/login.js",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/apps.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/build/manifest.json",
+		"/Users/leon/projects/apps/1nceuk/backend/apps/purchase/admin.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/payment.js",
+		"/Users/leon/projects/apps/1nceuk/.gitignore",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/index.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/address_options.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/basket/basket.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/checkout/suggestions.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/login/login.module.css",
+		"/Users/leon/Desktop/aws.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/reducer.js",
+		"/Users/leon/Desktop/Data/Old Macbook Pro/projects/django-react-boilerplate/backend/server/settings.py",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/collections.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/node_modules/@sinonjs/commons/types/class-name.d.ts",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/home.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/store/store_select.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/underbar.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/App.css",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/footer.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/navbar.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/core/itembar.js",
+		"/Users/leon/projects/apps/1nceuk/frontend/src/components/home/shop_now.js"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 98.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 42.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.LSP Log Panel":
+	{
+		"height": 0.0
+	},
+	"output.Terminus Build Results":
+	{
+		"height": 185.0
+	},
+	"output.diagnostics":
+	{
+		"height": 0.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/alpha_env.sublime-build",
+	"project": "RoeSystematica.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"Package Control Messages"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 176.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

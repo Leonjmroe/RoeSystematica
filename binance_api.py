@@ -1,5 +1,6 @@
-from dotenv import load_dotenv
 import os
+import binance
+from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceRequestException
 
