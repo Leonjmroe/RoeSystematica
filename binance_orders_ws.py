@@ -33,13 +33,13 @@ class BinanceOrdersWebSocket:
         logger.error(error)
 
     def on_close(self, ws, close_status_code, close_msg):
-        logger.info("### WebSocket closed ###")
+        logger.info("### WebSocket closed on BinanceOrdersWebSocket ###")
 
     def on_open(self, ws):
         def run(*args):
-            print("Opened connection")
+            print("Opened connection to BinanceOrdersWebSocket")
             while True:
-                time.sleep(50)
+                time.sleep(5)
                 self.ws.send(json.dumps({'method': 'KEEPALIVE'}))
 
         thread = threading.Thread(target=run)

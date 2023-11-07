@@ -48,14 +48,14 @@ def market_make(data):
 	# cancel = binance_api.cancel_order(symbol='BTCUSDT', order_id='order_id_here')
 	# order = binance_api.create_order(symbol='BTCUSDT', side='BUY', type='LIMIT', quantity=1, price='35034')
 
-
-stream_url = "wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker"
-binance_price_ws = BinancePriceWebSocket(stream_url)
-binance_price_ws.callback = market_make
-# binance_price_ws.run_forever()
-
-
 binance_orders_ws = BinanceOrdersWebSocket(listen_key)
 binance_orders_ws.run_forever()
+
+
+stream_url = "wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker"
+binance_price_ws = BinancePriceWebSocket(stream_url) 
+binance_price_ws.callback = market_make
+binance_price_ws.run_forever()
+
 
 
