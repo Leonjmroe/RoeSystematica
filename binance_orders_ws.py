@@ -1,16 +1,16 @@
 import websocket
+from websocket import WebSocketApp 
 import threading
 import json
 import logging
-
+import time  
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
-class BinanceWebSocket:
-    def __init__(self, stream_url):
-        self.stream_url = stream_url
+class BinanceOrdersWebSocket:
+    def __init__(self, listen_key):
+        self.listen_key = listen_key
         self.ws = None  
         self.callback = None
 
@@ -37,18 +37,16 @@ class BinanceWebSocket:
 
     def on_open(self, ws):
         def run(*args):
-            ws.send(json.dumps({
-                "method": "SUBSCRIBE",
-                "params": [
-                    "btcusdt@bookTicker"
-                ],
-                "id": 1
-            }))
-            logger.info("WebSocket connection opened and subscribed to streams")
-        threading.Thread(target=run).start()
+            print("Opened connection")
+            while True:
+                time.sleep(50)
+                self.ws.send(json.dumps({'method': 'KEEPALIVE'}))
+
+        thread = threading.Thread(target=run)
+        thread.start()
 
     def run_forever(self):
-        self.ws = websocket.WebSocketApp(self.stream_url,
+        self.ws = WebSocketApp(f"wss://stream.binance.com:9443/ws/{self.listen_key}",
                                         on_open=self.on_open,
                                         on_message=self.on_message,
                                         on_error=self.on_error,
