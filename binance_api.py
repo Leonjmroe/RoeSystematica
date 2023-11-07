@@ -11,20 +11,20 @@ class BinanceAPI:
         self.logger = self._setup_logger()
 
     def _setup_logger(self):
-        # Configure logging
         logger = logging.getLogger('BinanceFuturesTestnet')
         logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        logger.propagate = False  # Disable propagation to the parent logger
+        if not logger.handlers:  # Avoid adding multiple handlers
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
         return logger
 
+
     def get_balance(self):
-        """Get current balance."""
         try:
             balance = self.client.futures_account_balance()
-            # self.logger.info("Fetched balance successfully.")
             return balance
         except BinanceAPIException as e:
             self.logger.error(f"Binance API Exception: {e}")
@@ -34,7 +34,6 @@ class BinanceAPI:
             self.logger.error(f"An unexpected error occurred: {e}")
 
     def get_open_orders(self, symbol):
-        """Get open orders for a symbol."""
         try:
             open_orders = self.client.futures_get_open_orders(symbol=symbol)
             self.logger.info("Fetched open orders successfully.")
@@ -45,7 +44,6 @@ class BinanceAPI:
             self.logger.error(f"An unexpected error occurred: {e}")
 
     def create_order(self, symbol, side, type, quantity, price=None, timeInForce='GTC'):
-        """Create an order."""
         try:
             params = {
                 'symbol': symbol,
@@ -67,7 +65,6 @@ class BinanceAPI:
             self.logger.error(f"An unexpected error occurred: {e}")
 
     def cancel_order(self, symbol, order_id):
-        """Cancel an order."""
         try:
             result = self.client.futures_cancel_order(symbol=symbol, orderId=order_id)
             self.logger.info("Order cancelled successfully.")
@@ -78,7 +75,6 @@ class BinanceAPI:
             self.logger.error(f"An unexpected error occurred: {e}")
 
     def get_all_orders(self, symbol):
-        """Get all account orders; active, canceled, or filled."""
         try:
             orders = self.client.futures_get_all_orders(symbol=symbol)
             self.logger.info("Fetched all orders successfully.")
