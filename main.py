@@ -2,7 +2,7 @@ from binance_api import binance_api
 from binance_price_ws import BinancePriceWebSocket
 from binance_orders_ws import BinanceOrdersWebSocket
 import os
-from listen_key import get_listen_key
+from listen_key import get_listen_key, keep_alive
 from dotenv import load_dotenv
 import threading
 
@@ -10,7 +10,12 @@ import threading
 load_dotenv()
 api_key = os.getenv('API_KEY_TEST')
 api_secret = os.getenv('API_SECRET_TEST')
-listen_key = get_listen_key(api_key, api_secret)
+
+
+listen_key = get_listen_key(api_key)
+keep_alive_thread = threading.Thread(target=keep_alive, args=(api_key, listen_key))
+keep_alive_thread.start()
+print(listen_key)
 
 
 balances = binance_api.get_balance()

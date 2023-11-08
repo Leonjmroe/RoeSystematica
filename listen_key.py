@@ -1,19 +1,43 @@
 import requests
+import threading
+import time
 
 
-def get_listen_key(api_key, api_secret):
+def refresh_listen_key(api_key, listen_key):
+    base_url = 'https://testnet.binancefuture.com'
+    path = f'/fapi/v1/listenKey?listenKey={listen_key}'
+    url = base_url + path
 
-	base_url = 'https://testnet.binancefuture.com'
-	path = '/fapi/v1/listenKey'
-	url = base_url + path
+    headers = {'X-MBX-APIKEY': api_key}
+    response = requests.put(url, headers=headers)
+    response.raise_for_status()
 
-	headers = {'X-MBX-APIKEY': api_key}
-	response = requests.post(url, headers=headers)
+    print(f"Listen key refreshed, response status code: {response.status_code}")
+    print(f"Current listen key (still valid): {listen_key}")
 
-	response.raise_for_status()
 
-	data = response.json()
-	listen_key = data.get('listenKey')
+def get_listen_key(api_key):
+    base_url = 'https://testnet.binancefuture.com'
+    path = '/fapi/v1/listenKey'
+    url = base_url + path
 
-	return listen_key
+    headers = {'X-MBX-APIKEY': api_key}
+    response = requests.post(url, headers=headers)
+    response.raise_for_status()
+    
+    data = response.json()
+    listen_key = data.get('listenKey')
+    
+    return listen_key
 
+
+def keep_alive(api_key, listen_key, interval=1800):  # Refresh every 30 minutes
+    while True:
+        try:
+            refresh_listen_key(api_key, listen_key)
+            print("Successfully refreshed the listen key.")
+        except Exception as e:
+            print(f"Failed to refresh listen key: {e}")
+            # Handle the error appropriately - possibly by getting a new listen key.
+
+        time.sleep(interval)

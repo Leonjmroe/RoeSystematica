@@ -17,18 +17,22 @@ class BinanceOrdersWebSocket:
         self.callback = None
 
     def on_message(self, ws, message):
-        print(data)
         try:
             data = json.loads(message)
-            print(data)
-            if self.callback:
+            
+            if data['e'] == 'executionReport' and data['X'] == 'FILLED':
+                # Handle filled order
+                print("Filled Order:", data)
+                if self.callback:
                     self.callback(data)
-            else:
-                logger.warning(f"Message received without expected keys: {data}")
+        except KeyError as e:
+            # Not all messages will have 'e' and 'X', so handle KeyError.
+            pass
         except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON: {e}")
+            print(f"Error decoding JSON: {e}")
         except Exception as e:
-            logger.error(f"Error in on_message: {e}")
+            print(f"Error in on_message: {e}")
+
 
     def on_error(self, ws, error):
         logger.error(error)
@@ -40,7 +44,7 @@ class BinanceOrdersWebSocket:
         logger.info("Opened connection to BinanceOrdersWebSocket")
 
     def run_forever(self):
-        self.ws = WebSocketApp(f"wss://stream.binance.com:9443/ws/{self.listen_key}",
+        self.ws = WebSocketApp(f"wss://stream.binancefuture.com/ws/{self.listen_key}",
                                         on_open=self.on_open,
                                         on_message=self.on_message,
                                         on_error=self.on_error,
