@@ -5,8 +5,10 @@ import json
 import logging
 import time  
 
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class BinanceOrdersWebSocket:
     def __init__(self, listen_key):
@@ -36,14 +38,7 @@ class BinanceOrdersWebSocket:
         logger.info("### WebSocket closed on BinanceOrdersWebSocket ###")
 
     def on_open(self, ws):
-        def run(*args):
-            print("Opened connection to BinanceOrdersWebSocket")
-            while True:
-                time.sleep(5)
-                self.ws.send(json.dumps({'method': 'KEEPALIVE'}))
-
-        thread = threading.Thread(target=run)
-        thread.start()
+        logger.info("Opened connection to BinanceOrdersWebSocket")
 
     def run_forever(self):
         self.ws = WebSocketApp(f"wss://stream.binance.com:9443/ws/{self.listen_key}",

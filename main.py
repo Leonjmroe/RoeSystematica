@@ -4,6 +4,7 @@ from binance_orders_ws import BinanceOrdersWebSocket
 import os
 from listen_key import get_listen_key
 from dotenv import load_dotenv
+import threading
 
 
 load_dotenv()
@@ -48,14 +49,17 @@ def market_make(data):
 	# cancel = binance_api.cancel_order(symbol='BTCUSDT', order_id='order_id_here')
 	# order = binance_api.create_order(symbol='BTCUSDT', side='BUY', type='LIMIT', quantity=1, price='35034')
 
-binance_orders_ws = BinanceOrdersWebSocket(listen_key)
-binance_orders_ws.run_forever()
 
+binance_orders_ws = BinanceOrdersWebSocket(listen_key)
+orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
+orders_thread.start()  
 
 stream_url = "wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker"
-binance_price_ws = BinancePriceWebSocket(stream_url) 
+binance_price_ws = BinancePriceWebSocket(stream_url)
 binance_price_ws.callback = market_make
-binance_price_ws.run_forever()
+
+price_thread = threading.Thread(target=binance_price_ws.run_forever)
+price_thread.start() 
 
 
 
