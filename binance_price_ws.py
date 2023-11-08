@@ -44,7 +44,7 @@ class BinancePriceWebSocket:
                 ],
                 "id": 1
             }))
-            logger.info("WebSocket connection opened and subscribed to streams")
+            logger.info("BinancePriceWebSocket connection opened and subscribed to streams")
         threading.Thread(target=run).start()
 
     def run_forever(self):
