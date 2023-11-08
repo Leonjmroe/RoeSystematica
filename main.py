@@ -19,11 +19,6 @@ for account in balances:
 		print('Balance: $' + "{:,}".format(round(float(account['balance']))))
 
 
-binance_orders_ws = BinanceOrdersWebSocket(listen_key)
-orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
-orders_thread.start()  
-
-
 
 class MarketMaker:
 	def __init__(self, dollar_order_size, pip_width):
@@ -41,7 +36,7 @@ class MarketMaker:
 
 		ask_px = round(ask + (ask * (self.pip_width / 10000)), 1)
 		bid_px = round(bid - (bid * (self.pip_width / 10000)), 1)
-		
+
 		btc_order_size = round((self.dollar_order_size / ((ask + bid) / 2)), 3)
 		if btc_order_size < 0.001:
 			btc_order_size = 0.001
@@ -56,12 +51,27 @@ class MarketMaker:
 
 
 
-market_maker = MarketMaker(100, 5)
+class OrderHandler:
+	def __init__(self):
+		pass
 
+	def order_listener(self, data):
+		print(data)
+
+
+
+order_handler = OrderHandler()
+binance_orders_ws = BinanceOrdersWebSocket(listen_key)
+binance_orders_ws.callback = order_handler.order_listener
+orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
+orders_thread.start()  
+
+
+market_maker = MarketMaker(100, 1)
 binance_price_ws = BinancePriceWebSocket("wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker")
 binance_price_ws.callback = market_maker.market_make
 price_thread = threading.Thread(target=binance_price_ws.run_forever)
-# price_thread.start() 
+price_thread.start() 
 
 
 

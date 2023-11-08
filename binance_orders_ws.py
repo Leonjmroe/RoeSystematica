@@ -17,12 +17,11 @@ class BinanceOrdersWebSocket:
         self.callback = None
 
     def on_message(self, ws, message):
+        print(data)
         try:
             data = json.loads(message)
-            if 'result' in data and 'id' in data:
-                logger.info(f"Subscription confirmed: {data}")
-            elif 'b' in data and 'B' in data and 'a' in data and 'A' in data:
-                if self.callback:
+            print(data)
+            if self.callback:
                     self.callback(data)
             else:
                 logger.warning(f"Message received without expected keys: {data}")
