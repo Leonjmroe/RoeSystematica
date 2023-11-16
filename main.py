@@ -57,18 +57,46 @@ class MarketMaker:
 
 class OrderHandler:
 	def __init__(self):
-		pass
+		self.orders_out = []
+		self.long_positiions = []
+		self.short_positiions = []
 
 	def order_listener(self, data):
 
 		if data['o']['X'] == 'NEW':
+			self.orders_out.append((data['o']['c'], data))
 			print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} PLACED at {data['o']['p']}''')
 
 		if data['o']['X'] == 'FILLED':
 			print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} FILLED at {data['o']['p']}''')
+			self.handle_fill()
 
-		if data['o']['s'] == 'MARKET':
-			print(data)
+
+	def handle_fill(self, data):
+		order_id = data['o']['c']
+		if data['o']['S'] == 'BUY':
+			if len(self.short_positiions) == 0:
+				self.long_positiions.append((order_id, data))
+			else:
+				self.short_positiion_close(order_id)
+		else:
+			if len(self.long_positiions) == 0:
+				self.short_positiions.append((order_id, data))
+			else:
+				self.long_positiion_close(order_id)
+
+	def short_positiion_close(self, order_id):
+		for order in orders_out:
+			if order[0] == order_id:
+				print('Found open order: ', order_id)
+
+	def long_positiion_close(self, order_id):
+		for order in orders_out:
+			if order[0] == order_id:
+				print('Found open order: ', order_id)
+
+
+
 
 
 order_handler = OrderHandler()
