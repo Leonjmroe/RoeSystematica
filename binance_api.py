@@ -12,7 +12,7 @@ class BinanceAPI:
 
     def _setup_logger(self):
         logger = logging.getLogger('BinanceFuturesTestnet')
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.ERROR)
         logger.propagate = False  # Disable propagation to the parent logger
         if not logger.handlers:  # Avoid adding multiple handlers
             handler = logging.StreamHandler()
@@ -55,12 +55,14 @@ class BinanceAPI:
             if price:
                 params['price'] = price
             order = self.client.futures_create_order(**params)
-            self.logger.info("Order created successfully.")
+            # self.logger.info("Order created successfully.")
             return order
         except BinanceAPIException as e:
-            self.logger.error(f"Binance API Exception: {e}")
+            # self.logger.error(f"Binance API Exception: {e}")
+            pass
         except BinanceOrderException as e:
-            self.logger.error(f"Binance Order Exception: {e}")
+            # self.logger.error(f"Binance Order Exception: {e}")
+            pass
         except Exception as e:
             self.logger.error(f"An unexpected error occurred: {e}")
 

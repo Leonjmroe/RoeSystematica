@@ -18,16 +18,20 @@ class BinancePriceWebSocket:
         try:
             data = json.loads(message)
             if 'result' in data and 'id' in data:
-                logger.info(f"Subscription confirmed: {data}")
+                # logger.info(f"Subscription confirmed: {data}")
+                pass
             elif 'b' in data and 'B' in data and 'a' in data and 'A' in data:
                 if self.callback:
                     self.callback(data)
             else:
-                logger.warning(f"Message received without expected keys: {data}")
+                # logger.warning(f"Message received without expected keys: {data}")
+                pass
         except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON: {e}")
+            pass
+            # logger.error(f"Error decoding JSON: {e}")
         except Exception as e:
-            logger.error(f"Error in on_message: {e}")
+            pass
+            # logger.error(f"Error in on_message: {e}")
 
     def on_error(self, ws, error):
         logger.error(error)
@@ -44,7 +48,7 @@ class BinancePriceWebSocket:
                 ],
                 "id": 1
             }))
-            logger.info("BinancePriceWebSocket connection opened and subscribed to streams")
+            # logger.info("BinancePriceWebSocket connection opened and subscribed to streams")
         threading.Thread(target=run).start()
 
     def run_forever(self):

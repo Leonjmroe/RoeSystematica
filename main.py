@@ -15,7 +15,6 @@ api_secret = os.getenv('API_SECRET_TEST')
 listen_key = get_listen_key(api_key)
 keep_alive_thread = threading.Thread(target=keep_alive, args=(api_key, listen_key))
 keep_alive_thread.start()
-print(listen_key)
 
 
 balances = binance_api.get_balance()
@@ -61,8 +60,15 @@ class OrderHandler:
 		pass
 
 	def order_listener(self, data):
-		print(data)
 
+		if data['o']['X'] == 'NEW':
+			print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} PLACED at {data['o']['p']}''')
+
+		if data['o']['X'] == 'FILLED':
+			print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} FILLED at {data['o']['p']}''')
+
+		if data['o']['s'] == 'MARKET':
+			print(data)
 
 
 order_handler = OrderHandler()
