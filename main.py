@@ -24,6 +24,7 @@ for account in balances:
 
 
 
+
 class MarketMaker:
 	def __init__(self, dollar_order_size, pip_width):
 		self.ask_orders = []
@@ -31,20 +32,29 @@ class MarketMaker:
 		self.dollar_order_size = dollar_order_size
 		self.pip_width = pip_width
 
-	def market_make(self, data):
 
+	def market_make(self, data):
 		ask = float(data['a'])
 		bid = float(data['b'])
 		ask_qty = round(ask * float(data['A']))
 		bid_qty = round( bid * float(data['B']))
-
 		ask_px = round(ask + (ask * (self.pip_width / 10000)), 1)
 		bid_px = round(bid - (bid * (self.pip_width / 10000)), 1)
-
 		btc_order_size = round((self.dollar_order_size / ((ask + bid) / 2)), 3)
 		if btc_order_size < 0.001:
 			btc_order_size = 0.001
+		self.get_btc_order_size(ask, bid)
+		self.place_orders(ask_px, bid_px, btc_order_size)
 
+
+	def get_btc_order_size(self, ask, bid):
+		btc_order_size = round((self.dollar_order_size / ((ask + bid) / 2)), 3)
+		if btc_order_size < 0.001:
+			btc_order_size = 0.001
+		return btc_order_size
+
+
+	def place_orders(self, ask_px, bid_px, btc_order_size):
 		if len(self.ask_orders) == 0:
 			order = binance_api.create_order(symbol='BTCUSDT', side='SELL', type='LIMIT', quantity=btc_order_size, price=ask_px)
 			self.ask_orders.append(order)
@@ -55,8 +65,10 @@ class MarketMaker:
 
 
 
+
 class OrderHandler:
 	def __init__(self):
+		self.market_maker = MarketMaker(100, 1)
 		self.orders_out = []
 		self.long_positiions = []
 		self.short_positiions = []
@@ -69,7 +81,7 @@ class OrderHandler:
 
 		if data['o']['X'] == 'FILLED':
 			print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} FILLED at {data['o']['p']}''')
-			self.handle_fill()
+			self.handle_fill(data)
 
 
 	def handle_fill(self, data):
