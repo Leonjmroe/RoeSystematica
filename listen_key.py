@@ -31,13 +31,13 @@ def get_listen_key(api_key):
     return listen_key
 
 
-def keep_alive(api_key, listen_key, interval=1800):  # Refresh every 30 minutes
+def keep_alive(api_key, listen_key, interval=1800):
     while True:
         try:
             refresh_listen_key(api_key, listen_key)
             print("Successfully refreshed the listen key.")
         except Exception as e:
             print(f"Failed to refresh listen key: {e}")
-            # Handle the error appropriately - possibly by getting a new listen key.
-
+            listen_key = get_listen_key(api_key)  # Get a new listen key
+            # Logic to restart WebSocket connection with new listen key
         time.sleep(interval)

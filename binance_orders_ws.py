@@ -19,26 +19,31 @@ class BinanceOrdersWebSocket:
     def on_message(self, ws, message):
         try:
             data = json.loads(message)
-            
-            if data['e'] == 'executionReport' and data['X'] == 'FILLED':
-                # Handle filled order
-                print("Filled Order:", data)
+            logger.info(f"WebSocket Message Received: {data}")
+
+            # Check if the message is an execution report for a filled order
+            if data.get('e') == 'executionReport' and data.get('X') == 'FILLED':
+                logger.info("Filled Order Detected")
                 if self.callback:
                     self.callback(data)
+            else:
+                logger.info("Non-fill message or different event received")
         except KeyError as e:
             # Not all messages will have 'e' and 'X', so handle KeyError.
-            pass
+            logger.warning(f"KeyError in on_message: {e}")
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+            logger.error(f"Error decoding JSON: {e}")
         except Exception as e:
-            print(f"Error in on_message: {e}")
+            logger.error(f"Error in on_message: {e}")
 
 
     def on_error(self, ws, error):
-        logger.error(error)
+        logger.error(f"WebSocket Error: {error}")
 
     def on_close(self, ws, close_status_code, close_msg):
-        logger.info("### WebSocket closed on BinanceOrdersWebSocket ###")
+        logger.info(f"WebSocket Closed: Code: {close_status_code}, Message: {close_msg}")
+        time.sleep(10) 
+        self.run_forever() 
 
     def on_open(self, ws):
         logger.info("Opened connection to BinanceOrdersWebSocket")
