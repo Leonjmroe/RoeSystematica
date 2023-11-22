@@ -1,4 +1,4 @@
-from binance_api import binance_api
+from binance_api import BinanceAPI
 from binance_price_ws import BinancePriceWebSocket
 from binance_orders_ws import BinanceOrdersWebSocket
 import os
@@ -16,7 +16,7 @@ listen_key = get_listen_key(api_key)
 keep_alive_thread = threading.Thread(target=keep_alive, args=(api_key, listen_key))
 keep_alive_thread.start()
 
-
+binance_api = BinanceAPI()
 balances = binance_api.get_balance()
 for account in balances:
 	if account['asset'] == 'USDT':
@@ -111,11 +111,11 @@ class OrderHandler:
 
 
 
-order_handler = OrderHandler()
-binance_orders_ws = BinanceOrdersWebSocket(listen_key)
-binance_orders_ws.callback = order_handler.order_listener
-orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
-orders_thread.start()  
+# order_handler = OrderHandler()
+# binance_orders_ws = BinanceOrdersWebSocket(listen_key)
+# binance_orders_ws.callback = order_handler.order_listener
+# orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
+# orders_thread.start()  
 
 
 market_maker = MarketMaker(100, 1)

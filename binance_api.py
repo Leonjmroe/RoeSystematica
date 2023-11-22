@@ -1,26 +1,27 @@
-import os
-from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceOrderException
 import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 class BinanceAPI:
-    def __init__(self, api_key, api_secret):
-        self.client = Client(api_key, api_secret, testnet=True)
+    def __init__(self):
+        self.client = Client(os.getenv('API_KEY_TEST'), os.getenv('API_SECRET_TEST'), testnet=True)
         self.logger = self._setup_logger()
 
     def _setup_logger(self):
         logger = logging.getLogger('BinanceFuturesTestnet')
         logger.setLevel(logging.ERROR)
-        logger.propagate = False  # Disable propagation to the parent logger
-        if not logger.handlers:  # Avoid adding multiple handlers
+        logger.propagate = False 
+        if not logger.handlers:  
             handler = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
         return logger
-
 
     def get_balance(self):
         try:
@@ -55,13 +56,13 @@ class BinanceAPI:
             if price:
                 params['price'] = price
             order = self.client.futures_create_order(**params)
-            # self.logger.info("Order created successfully.")
+            self.logger.info("Order created successfully.")
             return order
         except BinanceAPIException as e:
-            # self.logger.error(f"Binance API Exception: {e}")
+            self.logger.error(f"Binance API Exception: {e}")
             pass
         except BinanceOrderException as e:
-            # self.logger.error(f"Binance Order Exception: {e}")
+            self.logger.error(f"Binance Order Exception: {e}")
             pass
         except Exception as e:
             self.logger.error(f"An unexpected error occurred: {e}")
@@ -86,10 +87,38 @@ class BinanceAPI:
         except Exception as e:
             self.logger.error(f"An unexpected error occurred: {e}")
 
+    def get_last_bid_ask(self, symbol):
+        try:
+            order_book = self.client.get_order_book(symbol=symbol, limit=5)  # limit=5 for the top 5 bids/asks
+            best_bid = order_book['bids'][0][0]  # First bid's price
+            best_ask = order_book['asks'][0][0]  # First ask's price
+            return best_bid, best_ask
+        except BinanceAPIException as e:
+            self.logger.error(f"Binance API Exception: {e}")
+        except Exception as e:
+            self.logger.error(f"An unexpected error occurred: {e}")
 
-load_dotenv()
-api_key = os.getenv('API_KEY_TEST')
-api_secret = os.getenv('API_SECRET_TEST')
+    def get_exchange_info(self):
+        try:
+            return self.client.futures_exchange_info()
+        except BinanceAPIException as e:
+            self.logger.error(f"Binance API Exception: {e}")
+        except Exception as e:
+            self.logger.error(f"An unexpected error occurred: {e}")
+            
 
-binance_api = BinanceAPI(api_key, api_secret)
+    def get_tick_size(self, symbol):
+        exchange_info = self.get_exchange_info()
+        if exchange_info:
+            for s in exchange_info['symbols']:
+                if s['symbol'] == symbol:
+                    for f in s['filters']:
+                        if f['filterType'] == 'PRICE_FILTER':
+                            return f['tickSize']
+        else:
+            self.logger.error("Failed to fetch exchange info")
+            return None
+
+
+
 
