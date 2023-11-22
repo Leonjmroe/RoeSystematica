@@ -7,7 +7,7 @@ from websocket import WebSocketApp
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class BinanceOrdersWebSocket:
+class BinanceOrderWebSocket:
     def __init__(self, listen_key):
         self.listen_key = listen_key
         self.ws = None

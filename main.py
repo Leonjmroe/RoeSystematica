@@ -111,11 +111,11 @@ class OrderHandler:
 
 
 
-# order_handler = OrderHandler()
-# binance_orders_ws = BinanceOrdersWebSocket(listen_key)
-# binance_orders_ws.callback = order_handler.order_listener
-# orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
-# orders_thread.start()  
+order_handler = OrderHandler()
+binance_orders_ws = BinanceOrdersWebSocket(listen_key)
+binance_orders_ws.callback = order_handler.order_listener
+orders_thread = threading.Thread(target=binance_orders_ws.run_forever)
+orders_thread.start()  
 
 
 market_maker = MarketMaker(100, 1)
@@ -131,4 +131,82 @@ price_thread.start()
 # cancel = binance_api.cancel_order(symbol='BTCUSDT', order_id='order_id_here')
 # order = binance_api.create_order(symbol='BTCUSDT', side='BUY', type='LIMIT', quantity=1, price='35034')
 
+
+
+
+
+
+class Controller():
+    def __init__(self, api, dollar_balance, dollar_risk, pip_spread):
+        self.api = api
+        self.longs = []
+        self.shorts = []
+        self.open_long = None
+        self.open_short = None
+        self.dollar_balance = dollar_balance
+        self.trade_id = 0
+        
+
+    def fill_check(self, price):
+        if self.open_long != None:
+            if price <= self.open_long.get('price'):
+                print(f'''Long Fill at {self.open_long.get('price')} ID: {self.open_long.get('id')}''')
+                self.open_long = None
+                self.longs.append(self.open_long)
+                self.pull_order('SELL')
+                self.place_order(price, 'BUY')
+                self.place_order(price, 'SELL')
+        if self.open_short != None:
+            if price >= self.open_short.get('price'):
+                print(f'''Short Fill at {self.open_short.get('price')} ID: {self.open_short.get('id')}''')
+                self.open_short = None
+                self.shorts.append(self.open_short)
+                self.pull_order('BUY')
+                self.place_order(price, 'BUY')
+                self.place_order(price, 'SELL')
+            
+
+    def place_order(self, price, side):
+        if side == 'BUY':
+            price = price - self.spread
+        else:
+            price = price + self.spread
+        order = {'side': side,
+                 'size': self.balance * self.risk,
+                 'price': price,
+                 'id': self.trade_id}
+        if side == 'BUY':
+            self.open_long = order 
+        else:
+            self.open_short = order 
+        self.trade_id += 1
+        self.api.send_order(order)
+
+    
+    def api_order_send(order):
+        print(f'''Order sent to API with order ID: {order.get('id')}''')
+        if order.get('side') == 'BUY':
+            self.open_long = order
+        else: 
+            self.open_short = order 
+            
+            
+    def pull_order(self, side):
+        if side == 'BUY':
+            self.api.pull_order(self.open_long.get('id'))
+        else: 
+            self.api.pull_order(self.open_short.get('id'))
+        
+        
+            
+class API():
+    def __init__(self):
+        pass
+    
+    def send_order(self, order):
+        print(f'''API sent {order.get('side')} order at {order.get('price')} ID: {order.get('id')}''')
+    
+    def pull_order(self, id):
+        print(f'''API pulled order. ID: {id}''')
+   
 

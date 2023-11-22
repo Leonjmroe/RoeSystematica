@@ -1,8 +1,12 @@
 from binance_api import BinanceAPI
 from binance_price_ws import BinancePriceWebSocket
-from binance_orders_ws import BinanceOrdersWebSocket
+from binance_order_ws import BinanceOrderWebSocket
 import threading
 import time
+import os
+from listen_key import get_listen_key
+from dotenv import load_dotenv
+
 
 
 
@@ -21,9 +25,9 @@ class PriceHandler():
 
 
 class OrderPlacer():
-    def __init__(self, ticker, pip_spread, pip_risk):
-        self.api = BinanceAPI()
-        self.price_hander = PriceHandler()
+    def __init__(self, binance_api, price_handler, ticker, pip_spread, pip_risk):
+        self.binance_api = binance_api
+        self.price_hander = price_handler
         self.ticker = ticker
         self.pip_risk = pip_risk
         self.pip_spread = pip_spread
@@ -55,9 +59,9 @@ class OrderPlacer():
 
     def place_orders(self, init=False):
         if init == True:
-            tick_data = self.api.get_tick_size(self.ticker)
+            tick_data = self.binance_api.get_tick_size(self.ticker)
             self.tick_size = self.get_tick_count(tick_data)
-            order_prices = self.api.get_last_bid_ask(self.ticker)
+            order_prices = self.binance_api.get_last_bid_ask(self.ticker)
             self.ask = float(order_prices[0])
             self.bid = float(order_prices[1])
             order_size = self.get_btc_order_size()
@@ -66,56 +70,78 @@ class OrderPlacer():
             order_size = self.get_btc_order_size()
         ask_price = round(float(order_prices[0]), self.tick_size)
         bid_price = round(float(order_prices[1]), self.tick_size)
-        ask_order = self.api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=ask_price)
-        bid_order = self.api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=bid_price)
+        ask_order = self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=ask_price)
+        bid_order = self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=bid_price)
 
 
 
 
 class OrderHandler():
-    def __init__(self, max_positions):
-        self.api = BinanceAPI()
-        self.order_placer = OrderPlacer()
+    def __init__(self, max_positions, binance_api, order_placer):
+        self.binance_api = binance_api
+        self.order_placer = order_placer
         self.max_positions = max_positions
         self.open_orders = {'ask': None, 'bid': None}
         self.open_longs = []
         self.open_shorts = []
 
-    def order_filled(self):
-        pass
+    def order_listener(self, data):
+        if data['o']['X'] == 'NEW':
+            self.open_orders.append((data['o']['c'], data))
+            print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} PLACED at {data['o']['p']}''')
+
+        if data['o']['X'] == 'FILLED':
+            print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} FILLED at {data['o']['p']}''')
+            self.handle_fill(data)
+
+    def handle_fill(self, data):
+        print('Handling fill...')
 
     def pull_order(self):
-        pass
-
+        print('Order pulled.')
 
 
 
 
 class MarketMakerController():
-    def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions):
+    def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions, api_key):
         self.binance_api = BinanceAPI()
         self.price_handler = PriceHandler()
-        self.order_placer = OrderPlacer(ticker, pip_spread, pip_risk)
-        self.order_handler = OrderHandler(max_positions)
+        self.order_placer = OrderPlacer(self.binance_api, self.price_handler, ticker, pip_spread, pip_risk)
+        self.order_handler = OrderHandler(self.binance_api, self.order_placer, max_positions)
         self.binance_price_ws = BinancePriceWebSocket(ws_price_stream)
+        self.api_key = api_key
+        self.binance_order_ws = BinanceOrderWebSocket(self.listen_key())
 
     def run(self):
         self.start_price_ws()
+        self.start_order_ws()
         self.place_orders()
 
     def start_price_ws(self):
-        self.binance_price_ws.callback = self.price_hander.price_feed
+        self.binance_price_ws.callback = self.price_handler.price_feed
         price_thread = threading.Thread(target=self.binance_price_ws.run_forever)
         price_thread.start() 
 
+    def start_order_ws(self):
+        self.binance_order_ws.callback = self.order_handler.order_listener
+        orders_thread = threading.Thread(target=self.binance_order_ws.run_forever)
+        orders_thread.start()  
+
+    def listen_key(self):
+        listen_key = get_listen_key(self.api_key)
+        return listen_key
+
     def place_orders(self):
-        order_placer.place_orders(init=True)
+        self.order_placer.place_orders(init=True)
+
 
 
 
 if __name__ == "__main__":
     app = MarketMakerController(ticker='BTCUSDT',
                                 ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
+                                api_key=os.getenv('API_KEY_TEST'),
                                 pip_spread=25,
                                 pip_risk=50,
                                 max_positions=5)
@@ -125,84 +151,6 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-class Controller():
-    def __init__(self, api, dollar_balance, dollar_risk, pip_spread):
-        self.api = api
-        self.longs = []
-        self.shorts = []
-        self.open_long = None
-        self.open_short = None
-        self.dollar_balance = dollar_balance
-        self.trade_id = 0
-        
-
-    def fill_check(self, price):
-        if self.open_long != None:
-            if price <= self.open_long.get('price'):
-                print(f'''Long Fill at {self.open_long.get('price')} ID: {self.open_long.get('id')}''')
-                self.open_long = None
-                self.longs.append(self.open_long)
-                self.pull_order('SELL')
-                self.place_order(price, 'BUY')
-                self.place_order(price, 'SELL')
-        if self.open_short != None:
-            if price >= self.open_short.get('price'):
-                print(f'''Short Fill at {self.open_short.get('price')} ID: {self.open_short.get('id')}''')
-                self.open_short = None
-                self.shorts.append(self.open_short)
-                self.pull_order('BUY')
-                self.place_order(price, 'BUY')
-                self.place_order(price, 'SELL')
-            
-
-    def place_order(self, price, side):
-        if side == 'BUY':
-            price = price - self.spread
-        else:
-            price = price + self.spread
-        order = {'side': side,
-                 'size': self.balance * self.risk,
-                 'price': price,
-                 'id': self.trade_id}
-        if side == 'BUY':
-            self.open_long = order 
-        else:
-            self.open_short = order 
-        self.trade_id += 1
-        self.api.send_order(order)
-
-    
-    def api_order_send(order):
-        print(f'''Order sent to API with order ID: {order.get('id')}''')
-        if order.get('side') == 'BUY':
-            self.open_long = order
-        else: 
-            self.open_short = order 
-            
-            
-    def pull_order(self, side):
-        if side == 'BUY':
-            self.api.pull_order(self.open_long.get('id'))
-        else: 
-            self.api.pull_order(self.open_short.get('id'))
-        
-        
-            
-class API():
-    def __init__(self):
-        pass
-    
-    def send_order(self, order):
-        print(f'''API sent {order.get('side')} order at {order.get('price')} ID: {order.get('id')}''')
-    
-    def pull_order(self, id):
-        print(f'''API pulled order. ID: {id}''')
-   
 
 
 
