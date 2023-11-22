@@ -21,13 +21,12 @@ class PriceHandler():
 
 
 class OrderPlacer():
-    def __init__(self, ticker, pip_spread, pip_risk, max_positions):
+    def __init__(self, ticker, pip_spread, pip_risk):
+        self.api = BinanceAPI()
+        self.price_hander = PriceHandler()
         self.ticker = ticker
         self.pip_risk = pip_risk
         self.pip_spread = pip_spread
-        self.max_positions = max_positions
-        self.api = BinanceAPI()
-        self.price_hander = PriceHandler()
         self.ask = None
         self.bid = None
         self.tick_size = None
@@ -72,16 +71,62 @@ class OrderPlacer():
 
 
 
-# Price WebSocket 
-price_hander = PriceHandler()
-price_ws = BinancePriceWebSocket("wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker")
-price_ws.callback = price_hander.price_feed
-price_thread = threading.Thread(target=price_ws.run_forever)
-price_thread.start() 
 
-# Order Handling
-order_placer = OrderPlacer('BTCUSDT', pip_spread=25, pip_risk=50, max_positions=5)
-order_placer.place_orders(init=True)
+class OrderHandler():
+    def __init__(self, max_positions):
+        self.api = BinanceAPI()
+        self.order_placer = OrderPlacer()
+        self.max_positions = max_positions
+        self.open_orders = {'ask': None, 'bid': None}
+        self.open_longs = []
+        self.open_shorts = []
+
+    def order_filled(self):
+        pass
+
+    def pull_order(self):
+        pass
+
+
+
+
+
+class MarketMakerController():
+    def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions):
+        self.binance_api = BinanceAPI()
+        self.price_handler = PriceHandler()
+        self.order_placer = OrderPlacer(ticker, pip_spread, pip_risk)
+        self.order_handler = OrderHandler(max_positions)
+        self.binance_price_ws = BinancePriceWebSocket(ws_price_stream)
+
+    def run(self):
+        self.start_price_ws()
+        self.place_orders()
+
+    def start_price_ws(self):
+        self.binance_price_ws.callback = self.price_hander.price_feed
+        price_thread = threading.Thread(target=self.binance_price_ws.run_forever)
+        price_thread.start() 
+
+    def place_orders(self):
+        order_placer.place_orders(init=True)
+
+
+
+if __name__ == "__main__":
+    app = MarketMakerController(ticker='BTCUSDT',
+                                ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
+                                pip_spread=25,
+                                pip_risk=50,
+                                max_positions=5)
+    app.run()
+
+
+
+
+
+
+
 
 
 
@@ -95,6 +140,7 @@ class Controller():
         self.dollar_balance = dollar_balance
         self.trade_id = 0
         
+
     def fill_check(self, price):
         if self.open_long != None:
             if price <= self.open_long.get('price'):
@@ -113,7 +159,7 @@ class Controller():
                 self.place_order(price, 'BUY')
                 self.place_order(price, 'SELL')
             
-            
+
     def place_order(self, price, side):
         if side == 'BUY':
             price = price - self.spread
@@ -129,7 +175,7 @@ class Controller():
             self.open_short = order 
         self.trade_id += 1
         self.api.send_order(order)
-    
+
     
     def api_order_send(order):
         print(f'''Order sent to API with order ID: {order.get('id')}''')
