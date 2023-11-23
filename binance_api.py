@@ -11,6 +11,7 @@ class BinanceAPI:
     def __init__(self):
         self.client = Client(os.getenv('API_KEY_TEST'), os.getenv('API_SECRET_TEST'), testnet=True)
         self.logger = self._setup_logger()
+        self.callback = None
 
     def _setup_logger(self):
         logger = logging.getLogger('BinanceFuturesTestnet')
@@ -56,6 +57,7 @@ class BinanceAPI:
             if price:
                 params['price'] = price
             order = self.client.futures_create_order(**params)
+            self.callback(order)
             self.logger.info("Order created successfully.")
             return order
         except BinanceAPIException as e:
