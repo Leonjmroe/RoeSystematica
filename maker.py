@@ -19,19 +19,27 @@ class OrderHandler():
         self.open_longs = []
         self.open_shorts = []
 
-    def order_listener(self, data):
-        if data['o']['X'] == 'NEW':
-            self.open_orders.append((data['o']['c'], data))
-            print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} NEW at {data['o']['p']}. Order ID: {data['o']['i']}''')
-
-        if data['o']['X'] == 'FILLED':
-            print(f'''A {data['o']['s']} {data['o']['S']} {data['o']['o']} order of ${round(float(data['o']['p']) * float(data['o']['q']))} FILLED at {data['o']['p']}. Order ID: {data['o']['i']}''')
-            self.handle_fill(data)
+    def order_listener(self, order):
+        if order['o']['X'] == 'FILLED':
+            print(f'''A {order['o']['s']} {order['o']['S']} {order['o']['o']} order of ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. Order ID: {order['o']['i']}''')
+            self.handle_open_orders(order, status='FILLED')
+            self.handle_fill(order)
 
     def order_placed_details(self, order):
         print(f'''A {order.get('symbol')} {order.get('side')} {order.get('type')} order of ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. Order ID: {order.get('orderId')}''')
+        self.handle_open_orders(order, status='PLACED')
 
-    def handle_fill(self, data):
+    def handle_open_orders(self, order, status):
+        if order.get('side') == 'BUY':
+            if status == 'FILLED':
+                order = None
+            self.open_orders['bid'] = order
+        if order.get('side') == 'SELL':
+            if status == 'FILLED':
+                order = None
+            self.open_orders['ask'] = order
+
+    def handle_fill(self, order):
         pass
 
     def pull_order(self):
