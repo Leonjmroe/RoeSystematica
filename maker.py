@@ -1,4 +1,3 @@
-# from maker_modules import PriceHandler, OrderPlacer
 from binance_api import BinanceAPI
 from binance_price_ws import BinancePriceWebSocket
 from binance_order_ws import BinanceOrderWebSocket
@@ -45,7 +44,7 @@ class OrderHandler():
 class OrderPlacer():
     def __init__(self, binance_api, price_handler, ticker, pip_spread, pip_risk):
         self.binance_api = binance_api
-        self.price_hander = PriceHandler()
+        self.price_hander = price_handler
         self.ticker = ticker
         self.pip_risk = pip_risk
         self.pip_spread = pip_spread
@@ -76,12 +75,16 @@ class OrderPlacer():
         if init == True:
             self.tick_size = self.get_tick_count(self.binance_api.get_tick_size(self.ticker))
             order_prices = self.binance_api.get_last_bid_ask(self.ticker)
-            ask_px = round(float(order_prices[0]), self.tick_size)
-            bid_px = round(float(order_prices[1]), self.tick_size)
+            self.ask = float(order_prices[0])
+            self.bid = float(order_prices[1])
+            ask_px = round(float(self.ask), self.tick_size)
+            bid_px = round(float(self.bid), self.tick_size)
+            print('Initial orders')
         else:
             self.get_order_prices()
             ask_px = round(float(self.ask), self.tick_size)
             bid_px = round(float(self.bid), self.tick_size)
+            print('Continued orders')
         order_size = self.get_btc_order_size()
         ask_order = self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=ask_px)
         bid_order = self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=bid_px)
