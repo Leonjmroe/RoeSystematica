@@ -18,31 +18,60 @@ class OrderHandler():
         self.open_orders = {'ask': None, 'bid': None}
         self.open_longs = []
         self.open_shorts = []
+        self.trades = []
 
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
             print(f'''A {order['o']['s']} {order['o']['S']} {order['o']['o']} order of ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. Order ID: {order['o']['i']}''')
-            self.handle_open_orders(order, status='FILLED')
             self.handle_fill(order)
 
     def order_placed_details(self, order):
         print(f'''A {order.get('symbol')} {order.get('side')} {order.get('type')} order of ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. Order ID: {order.get('orderId')}''')
-        self.handle_open_orders(order, status='PLACED')
+        self.handle_orders(order, status='PLACED')
 
-    def handle_open_orders(self, order, status):
+    def handle_orders(self, order, status):
+        if status == 'FILLED':
+            self.open_orders['ask'] = None
+            self.open_orders['bid'] = None
+
         if order.get('side') == 'BUY':
             if status == 'FILLED':
-                order = None
-            self.open_orders['bid'] = order
+                if len(open_shorts) == 0:
+                    self.open_longs.append(order)
+                else:
+                    self.trades = (order, self.open_shorts[0])
+                    self.open_shorts.pop(0)
+            if status == 'PLACED':
+                self.open_orders['bid'] = order
         if order.get('side') == 'SELL':
             if status == 'FILLED':
-                order = None
-            self.open_orders['ask'] = order
+                if len(open_longs) == 0:
+                    self.open_shorts.append(order)
+                else:
+                    self.trades = (self.open_longs[0], order)
+                    self.open_longs.pop(0)
+            if status == 'PLACED':
+                self.open_orders['ask'] = order
 
     def handle_fill(self, order):
-        pass
-
-    def pull_order(self):
+        self.handle_orders(order, status='FILLED')
+        self.pull_open_order(order)
+        
+    def pull_open_order(self, order):
+        try:
+            print(order.get('side'), self.order_placer.ticker)
+        except Exception as e:
+            print(e)
+        if order.get('side') == 'BUY':
+            try:
+                self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
+            except Exception as e:
+                print(e)
+        if order.get('side') == 'SELL':
+            try:
+                self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
+            except Exception as e:
+                print(e)
         print('Order pulled.')
 
 
@@ -152,7 +181,7 @@ if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=50,
+                                         pip_spread=1,
                                          pip_risk=50,
                                          max_positions=5)
     market_maker.run()
