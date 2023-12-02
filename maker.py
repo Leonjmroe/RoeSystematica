@@ -54,8 +54,8 @@ class OrderPlacer():
 
     def get_order_prices(self):
         prices = self.price_hander.get_prices()
-        self.ask = round(prices[0] + (prices[0] * (self.pip_spread / 10000)), 1)
-        self.bid = round(prices[1] - (prices[1]* (self.pip_spread / 10000)), 1)
+        self.ask = round(float(prices[0]) + (float(prices[0]) * (self.pip_spread / 10000)), self.tick_size)
+        self.bid = round(float(prices[1]) - (float(prices[1]) * (self.pip_spread / 10000)), self.tick_size)
 
     def get_btc_order_size(self):
         dollar_risk = (self.pip_risk / 10000) * ((self.ask + self.bid) / 2)
@@ -72,22 +72,12 @@ class OrderPlacer():
             return str(tick).count('0')
 
     def place_orders(self, init=False):
-        if init == True:
+        if init:
             self.tick_size = self.get_tick_count(self.binance_api.get_tick_size(self.ticker))
-            order_prices = self.binance_api.get_last_bid_ask(self.ticker)
-            self.ask = float(order_prices[0])
-            self.bid = float(order_prices[1])
-            ask_px = round(float(self.ask), self.tick_size)
-            bid_px = round(float(self.bid), self.tick_size)
-            print('Initial orders')
-        else:
-            self.get_order_prices()
-            ask_px = round(float(self.ask), self.tick_size)
-            bid_px = round(float(self.bid), self.tick_size)
-            print('Continued orders')
+        self.get_order_prices()
         order_size = self.get_btc_order_size()
-        ask_order = self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=ask_px)
-        bid_order = self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=bid_px)
+        ask_order = self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
+        bid_order = self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid)
 
 
 
@@ -154,7 +144,7 @@ if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=100,
+                                         pip_spread=50,
                                          pip_risk=50,
                                          max_positions=5)
     market_maker.run()
