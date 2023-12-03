@@ -2,16 +2,14 @@ from binance_api import BinanceAPI
 from binance_price_ws import BinancePriceWebSocket
 from binance_order_ws import BinanceOrderWebSocket
 from listen_key import get_listen_key
-from dotenv import load_dotenv
 import threading
-import time
 import os
 
 
 
 
-class OrderHandler():
-    def __init__(self, max_positions, binance_api, order_placer):
+class OrderHandler:
+    def __init__(self, binance_api, order_placer, max_positions):
         self.binance_api = binance_api
         self.order_placer = order_placer
         self.max_positions = max_positions
@@ -36,7 +34,7 @@ class OrderHandler():
 
         if order.get('side') == 'BUY':
             if status == 'FILLED':
-                if len(open_shorts) == 0:
+                if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
                 else:
                     self.trades = (order, self.open_shorts[0])
@@ -45,7 +43,7 @@ class OrderHandler():
                 self.open_orders['bid'] = order
         if order.get('side') == 'SELL':
             if status == 'FILLED':
-                if len(open_longs) == 0:
+                if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
                 else:
                     self.trades = (self.open_longs[0], order)
@@ -55,33 +53,34 @@ class OrderHandler():
 
     def handle_fill(self, order):
         self.handle_orders(order, status='FILLED')
-        self.pull_open_order(order)
-        
-    def pull_open_order(self, order):
         try:
-            print(order.get('side'), self.order_placer.ticker)
+            self.pull_open_order(order)
         except Exception as e:
             print(e)
-        if order.get('side') == 'BUY':
+
+    def pull_open_order(self, order):
+        print(self.open_orders)
+        if order['o']['S'] == 'BUY':
             try:
                 self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
+                print('Offer pulled')
             except Exception as e:
                 print(e)
-        if order.get('side') == 'SELL':
+        if order['o']['S'] == 'SELL':
             try:
                 self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
+                print('Bid pulled')
             except Exception as e:
                 print(e)
-        print('Order pulled.')
 
 
 
 
 
-class OrderPlacer():
+class OrderPlacer:
     def __init__(self, binance_api, price_handler, ticker, pip_spread, pip_risk):
         self.binance_api = binance_api
-        self.price_hander = price_handler
+        self.price_handler = price_handler
         self.ticker = ticker
         self.pip_risk = pip_risk
         self.pip_spread = pip_spread
@@ -89,8 +88,9 @@ class OrderPlacer():
         self.bid = None
         self.tick_size = None
 
+
     def get_order_prices(self):
-        prices = self.price_hander.get_prices()
+        prices = self.price_handler.get_prices()
         self.ask = round(float(prices[0]) + (float(prices[0]) * (self.pip_spread / 10000)), self.tick_size)
         self.bid = round(float(prices[1]) - (float(prices[1]) * (self.pip_spread / 10000)), self.tick_size)
 
@@ -101,7 +101,8 @@ class OrderPlacer():
             btc_order_size = 0.001
         return btc_order_size
 
-    def get_tick_count(self, tick_data):
+    @staticmethod
+    def get_tick_count(tick_data):
         tick = 0.1 / float(tick_data)
         if tick == 1:
             return 1
@@ -113,14 +114,13 @@ class OrderPlacer():
             self.tick_size = self.get_tick_count(self.binance_api.get_tick_size(self.ticker))
         self.get_order_prices()
         order_size = self.get_btc_order_size()
-        ask_order = self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
-        bid_order = self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid)
+        self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
+        self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid)
 
 
 
 
-
-class PriceHandler():
+class PriceHandler:
     def __init__(self):
         self.ask = None
         self.bid = None
@@ -136,12 +136,9 @@ class PriceHandler():
                 self.callback()
 
     def get_prices(self):
-        return self.ask, self.bid 
+        return self.ask, self.bid
 
-
-
-
-class MarketMakerController():
+class MarketMakerController:
     def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions, api_key):
         self.binance_api = BinanceAPI()
         self.price_handler = PriceHandler()
@@ -155,13 +152,13 @@ class MarketMakerController():
         self.price_handler.callback = self.place_orders
         self.binance_price_ws.callback = self.price_handler.price_feed
         price_thread = threading.Thread(target=self.binance_price_ws.run_forever)
-        price_thread.start() 
+        price_thread.start()
 
     def start_order_ws(self):
         self.binance_order_ws.callback = self.order_handler.order_listener
         self.binance_api.callback = self.order_handler.order_placed_details
         orders_thread = threading.Thread(target=self.binance_order_ws.run_forever)
-        orders_thread.start()  
+        orders_thread.start()
 
     def listen_key(self):
         listen_key = get_listen_key(self.api_key)
@@ -175,34 +172,13 @@ class MarketMakerController():
         self.start_order_ws()
 
 
-
-
 if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=1,
+                                         pip_spread=3,
                                          pip_risk=50,
-                                         max_positions=5)
+                                         max_positions=5)    
     market_maker.run()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
