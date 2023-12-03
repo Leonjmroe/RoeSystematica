@@ -18,30 +18,29 @@ class OrderHandler:
         self.open_shorts = []
         self.trades = []
 
+
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
             print(f'''A {order['o']['s']} {order['o']['S']} {order['o']['o']} order of ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. Order ID: {order['o']['i']}''')
             self.handle_fill(order)
 
+
     def order_placed_details(self, order):
         print(f'''A {order.get('symbol')} {order.get('side')} {order.get('type')} order of ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. Order ID: {order.get('orderId')}''')
-        self.handle_orders(order, status='PLACED')
+        self.handle_orders(order, status='PLACED', side=order.get('side'))
 
-    def handle_orders(self, order, status):
-        if status == 'FILLED':
-            self.open_orders['ask'] = None
-            self.open_orders['bid'] = None
 
-        if order.get('side') == 'BUY':
+    def handle_orders(self, order, status, side):
+        if side == 'BUY':
             if status == 'FILLED':
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
                 else:
-                    self.trades = (order, self.open_shorts[0])
+                    self.trades.append(order, self.open_shorts[0])
                     self.open_shorts.pop(0)
             if status == 'PLACED':
                 self.open_orders['bid'] = order
-        if order.get('side') == 'SELL':
+        if side == 'SELL':
             if status == 'FILLED':
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
@@ -51,27 +50,21 @@ class OrderHandler:
             if status == 'PLACED':
                 self.open_orders['ask'] = order
 
+
     def handle_fill(self, order):
-        self.handle_orders(order, status='FILLED')
-        try:
-            self.pull_open_order(order)
-        except Exception as e:
-            print(e)
+        self.handle_orders(order, status='FILLED', side=order['o']['S'])
+        self.pull_open_order(order)
+
 
     def pull_open_order(self, order):
-        print(self.open_orders)
         if order['o']['S'] == 'BUY':
-            try:
-                self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
-                print('Offer pulled')
-            except Exception as e:
-                print(e)
+            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
+            print('Offer pulled. Order ID: ' + open_orders['ask'].get('orderId'))
         if order['o']['S'] == 'SELL':
-            try:
-                self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
-                print('Bid pulled')
-            except Exception as e:
-                print(e)
+            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
+            print('Bid pulled. Order ID: ' + open_orders['bid'].get('orderId'))
+        self.open_orders = {'ask': None, 'bid': None}
+
 
 
 
