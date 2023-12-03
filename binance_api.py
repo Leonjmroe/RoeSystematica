@@ -5,6 +5,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class BinanceAPI:
@@ -72,6 +75,7 @@ class BinanceAPI:
     def cancel_order(self, symbol, order_id):
         try:
             result = self.client.futures_cancel_order(symbol=symbol, orderId=order_id)
+            print
             self.logger.info("Order cancelled successfully.")
             return result
         except BinanceAPIException as e:

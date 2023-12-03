@@ -22,7 +22,8 @@ class OrderHandler:
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
             print(f'''A {order['o']['s']} {order['o']['S']} {order['o']['o']} order of ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. Order ID: {order['o']['i']}''')
-            self.handle_fill(order)
+            self.handle_orders(order, status='FILLED', side=order['o']['S'])
+            self.pull_open_order(order['o']['S'])
 
 
     def order_placed_details(self, order):
@@ -51,21 +52,24 @@ class OrderHandler:
                 self.open_orders['ask'] = order
 
 
-    def handle_fill(self, order):
-        self.handle_orders(order, status='FILLED', side=order['o']['S'])
-        self.pull_open_order(order)
-
-
-    def pull_open_order(self, order):
-        if order['o']['S'] == 'BUY':
-            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
-            print('Offer pulled. Order ID: ' + open_orders['ask'].get('orderId'))
-        if order['o']['S'] == 'SELL':
-            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
-            print('Bid pulled. Order ID: ' + open_orders['bid'].get('orderId'))
+    def pull_open_order(self, side):
+        if side == 'BUY':
+            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
+            print('Offer pulled. Order ID: ' + str(pulled_order.get('orderId')))
+            print('Long Inventory: ' + str(len(self.open_longs)))
+        if side == 'SELL':
+            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
+            print('Bid pulled. Order ID: ' + str(pulled_order.get('orderId')))
+            print('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
+        self.order_placer.place_orders()
 
 
+    def test(self, expression):
+        try:
+            expression
+        except Exception as e:
+            print(e)
 
 
 
@@ -169,7 +173,7 @@ if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=3,
+                                         pip_spread=1,
                                          pip_risk=50,
                                          max_positions=5)    
     market_maker.run()
