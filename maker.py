@@ -1,7 +1,7 @@
 from binance_api import BinanceAPI
 from binance_price_ws import BinancePriceWebSocket
 from binance_order_ws import BinanceOrderWebSocket
-from listen_key import get_listen_key
+from binance_listen_key import get_listen_key
 import threading
 import os
 
@@ -39,6 +39,7 @@ class OrderHandler:
                 else:
                     self.trades.append(order, self.open_shorts[0])
                     self.open_shorts.pop(0)
+                    print('Trade Complete')
             if status == 'PLACED':
                 self.open_orders['bid'] = order
         if side == 'SELL':
@@ -48,6 +49,7 @@ class OrderHandler:
                 else:
                     self.trades = (self.open_longs[0], order)
                     self.open_longs.pop(0)
+                    print('Trade Complete')
             if status == 'PLACED':
                 self.open_orders['ask'] = order
 
@@ -57,9 +59,11 @@ class OrderHandler:
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
             print('Offer pulled. Order ID: ' + str(pulled_order.get('orderId')))
             print('Long Inventory: ' + str(len(self.open_longs)))
+            print('Short Inventory: ' + str(len(self.open_shorts)))
         if side == 'SELL':
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
             print('Bid pulled. Order ID: ' + str(pulled_order.get('orderId')))
+            print('Long Inventory: ' + str(len(self.open_longs)))
             print('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
         self.order_placer.place_orders()
@@ -135,6 +139,8 @@ class PriceHandler:
     def get_prices(self):
         return self.ask, self.bid
 
+
+
 class MarketMakerController:
     def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions, api_key):
         self.binance_api = BinanceAPI()
@@ -169,11 +175,12 @@ class MarketMakerController:
         self.start_order_ws()
 
 
+
 if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=1,
+                                         pip_spread=2,
                                          pip_risk=50,
                                          max_positions=5)    
     market_maker.run()
