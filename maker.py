@@ -36,6 +36,8 @@ class OrderHandler:
             if status == 'FILLED':
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
+                    if len(self.open_longs) == self.max_positions:
+                        self.set_stop_loss(side)
                 else:
                     self.trades.append((order, self.open_shorts[0]))
                     self.open_shorts.pop(0)
@@ -46,6 +48,8 @@ class OrderHandler:
             if status == 'FILLED':
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
+                    if len(self.open_shorts) == self.max_positions:
+                        self.set_stop_loss(side)
                 else:
                     self.trades = ((self.open_longs[0], order))
                     self.open_longs.pop(0)
@@ -69,11 +73,9 @@ class OrderHandler:
         self.order_placer.place_orders()
 
 
-    def test(self, expression):
-        try:
-            expression
-        except Exception as e:
-            print(e)
+    def set_stop_loss(self, side):
+        # self.binance_api.create_order(symbol=self.order_placer.ticker, side='BUY', type='STOP_MARKET', quantity=order_size, price=)
+        pass
 
 
 
@@ -88,7 +90,6 @@ class OrderPlacer:
         self.ask = None
         self.bid = None
         self.tick_size = None
-
 
     def get_order_prices(self):
         prices = self.price_handler.get_prices()
