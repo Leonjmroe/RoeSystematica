@@ -37,7 +37,7 @@ class OrderHandler:
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
                 else:
-                    self.trades.append(order, self.open_shorts[0])
+                    self.trades.append((order, self.open_shorts[0]))
                     self.open_shorts.pop(0)
                     print('Trade Complete')
             if status == 'PLACED':
@@ -47,7 +47,7 @@ class OrderHandler:
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
                 else:
-                    self.trades = (self.open_longs[0], order)
+                    self.trades = ((self.open_longs[0], order))
                     self.open_longs.pop(0)
                     print('Trade Complete')
             if status == 'PLACED':
