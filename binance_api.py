@@ -91,15 +91,15 @@ class BinanceAPI:
             print(f"An unexpected error occurred: {e}")
 
     def cancel_order(self, symbol, order_id):
-        try:
-            result = self.client.futures_cancel_order(symbol=symbol, orderId=order_id)
-            print
-            self.logger.info("Order cancelled successfully.")
-            return result
-        except BinanceAPIException as e:
-            self.logger.error(f"Binance API Exception: {e}")
-        except Exception as e:
-            self.logger.error(f"An unexpected error occurred: {e}")
+    # try:
+        result = self.client.futures_cancel_order(symbol=symbol, orderId=order_id)
+        # print
+        # self.logger.info("Order cancelled successfully.")
+        return result
+    # except BinanceAPIException as e:
+    #     self.logger.error(f"Binance API Exception: {e}")
+    # except Exception as e:
+    #     self.logger.error(f"An unexpected error occurred: {e}")
 
     def get_all_orders(self, symbol):
         try:
@@ -146,7 +146,6 @@ class BinanceAPI:
     def get_open_positions(self, symbol):
         try:
             all_positions = self.client.futures_position_information()
-            # Filter for the specific symbol
             position_for_symbol = [position for position in all_positions if position['symbol'] == symbol]
             return position_for_symbol
         except BinanceAPIException as e:
