@@ -72,6 +72,24 @@ class BinanceAPI:
         except Exception as e:
             self.logger.error(f"An unexpected error occurred: {e}")
 
+    def create_stop_market_order(self, symbol, side, quantity, stop_price):
+        try:
+            params = {
+                'symbol': symbol,
+                'side': side,
+                'type': 'STOP_MARKET',
+                'quantity': quantity,
+                'stopPrice': stop_price
+            }
+            order = self.client.create_order(**params)
+            return order
+        except BinanceAPIException as e:
+            print(f"Binance API Exception: {e}")
+        except BinanceOrderException as e:
+            print(f"Binance Order Exception: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
     def cancel_order(self, symbol, order_id):
         try:
             result = self.client.futures_cancel_order(symbol=symbol, orderId=order_id)
@@ -125,6 +143,18 @@ class BinanceAPI:
             self.logger.error("Failed to fetch exchange info")
             return None
 
+    def get_open_positions(self, symbol):
+        try:
+            all_positions = self.client.futures_position_information()
+            # Filter for the specific symbol
+            position_for_symbol = [position for position in all_positions if position['symbol'] == symbol]
+            return position_for_symbol
+        except BinanceAPIException as e:
+            print(f"Binance API Exception: {e}")
+        except BinanceOrderException as e:
+            print(f"Binance Order Exception: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
 
 

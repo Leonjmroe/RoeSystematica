@@ -24,6 +24,8 @@ class OrderHandler:
             print(f'''A {order['o']['s']} {order['o']['S']} {order['o']['o']} order of ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. Order ID: {order['o']['i']}''')
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
             self.pull_open_order(order['o']['S'])
+        if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
+            print(order)
 
 
     def order_placed_details(self, order):
@@ -37,7 +39,7 @@ class OrderHandler:
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
                     if len(self.open_longs) == self.max_positions:
-                        self.set_stop_loss(side)
+                        self.set_stop_loss('SELL')
                 else:
                     self.trades.append((order, self.open_shorts[0]))
                     self.open_shorts.pop(0)
@@ -49,7 +51,7 @@ class OrderHandler:
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
                     if len(self.open_shorts) == self.max_positions:
-                        self.set_stop_loss(side)
+                        self.set_stop_loss('BUY')
                 else:
                     self.trades = ((self.open_longs[0], order))
                     self.open_longs.pop(0)
@@ -60,22 +62,39 @@ class OrderHandler:
 
     def pull_open_order(self, side):
         if side == 'BUY':
-            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['ask'].get('orderId'))
+            pulled_order = self.api_pull_order('ask')
             print('Offer pulled. Order ID: ' + str(pulled_order.get('orderId')))
             print('Long Inventory: ' + str(len(self.open_longs)))
             print('Short Inventory: ' + str(len(self.open_shorts)))
         if side == 'SELL':
-            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders['bid'].get('orderId'))
+            pulled_order = self.api_pull_order('bid')
             print('Bid pulled. Order ID: ' + str(pulled_order.get('orderId')))
             print('Long Inventory: ' + str(len(self.open_longs)))
             print('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
         self.order_placer.place_orders()
 
+    def api_pull_order(self, side):
+        try:    
+            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders[side].get('orderId'))
+            return pulled_order
+        except Exception as e:
+            print(e)
+
 
     def set_stop_loss(self, side):
-        # self.binance_api.create_order(symbol=self.order_placer.ticker, side='BUY', type='STOP_MARKET', quantity=order_size, price=)
-        pass
+        try:
+            order_size = abs(float(self.binance_api.get_open_positions(self.order_placer.ticker)[0].get('positionAmt')))
+            self.order_placer.get_order_prices()
+            if side == 'SELL':
+                price = self.order_placer.bid
+            else:
+                price = self.order_placer.ask
+            self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, type='STOP_MARKET', quantity=order_size, stop_price=price)
+            print('Stop loss order placed.')
+        except Exception as e:
+            print(e)
+
 
 
 
@@ -159,8 +178,8 @@ class MarketMakerController:
         price_thread.start()
 
     def start_order_ws(self):
-        self.binance_order_ws.callback = self.order_handler.order_listener
         self.binance_api.callback = self.order_handler.order_placed_details
+        self.binance_order_ws.callback = self.order_handler.order_listener
         orders_thread = threading.Thread(target=self.binance_order_ws.run_forever)
         orders_thread.start()
 
@@ -183,7 +202,7 @@ if __name__ == "__main__":
                                          api_key=os.getenv('API_KEY_TEST'),
                                          pip_spread=2,
                                          pip_risk=50,
-                                         max_positions=5)    
+                                         max_positions=3)    
     market_maker.run()
 
 
