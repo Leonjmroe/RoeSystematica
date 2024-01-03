@@ -14,13 +14,9 @@ logger = logging.getLogger('MarketMakerLogger')
 logger.setLevel(logging.INFO)  
 fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - Line: %(lineno)d - %(message)s', datefmt='%H:%M:%S')
 fh.setFormatter(formatter)
-ch.setFormatter(formatter)
 logger.addHandler(fh)
-logger.addHandler(ch)
 
 
 
@@ -38,7 +34,7 @@ class OrderHandler:
 
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
-            logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {order['o']['i']}''')
+            logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
             self.pull_open_order(order['o']['S'])
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
         if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
@@ -46,7 +42,7 @@ class OrderHandler:
 
 
     def order_placed_details(self, order):
-        logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {order.get('orderId')}''')
+        logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {str(order.get('orderId'))[-3:]}''')
         self.handle_orders(order, status='PLACED', side=order.get('side'))
 
 
@@ -84,12 +80,12 @@ class OrderHandler:
     def pull_open_order(self, side):
         if side == 'BUY':
             pulled_order = self.api_pull_order('ask')
-            logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId')))
+            logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
             logger.info('Long Inventory: ' + str(len(self.open_longs)))
             logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
-            logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId')))
+            logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
             logger.info('Long Inventory: ' + str(len(self.open_longs)))
             logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
@@ -101,7 +97,7 @@ class OrderHandler:
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders[side].get('orderId'))
             return pulled_order
         except Exception as e:
-            logger.error(1, e)
+            logger.error(e)
 
 
     def set_stop_loss(self, side):
@@ -115,7 +111,7 @@ class OrderHandler:
             self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
             logger.info('Stop loss order placed.')
         except Exception as e:
-            logger.error(2, e)
+            logger.error(e)
 
 
 
@@ -193,6 +189,7 @@ class MarketMakerController:
         self.binance_price_ws = BinancePriceWebSocket(ws_price_stream)
         self.api_key = api_key
         self.binance_order_ws = BinanceOrderWebSocket(self.listen_key())
+        self.ticker = ticker
 
     def start_price_ws(self):
         self.price_handler.callback = self.place_orders
@@ -211,6 +208,14 @@ class MarketMakerController:
         return listen_key
 
     def place_orders(self):
+        # try:
+        #     self.binance_api.cancel_all_orders(self.ticker)
+        # except Exception as e:
+        #     logger.error(e)
+        # try:
+        #     self.binance_api.close_open_position(self.ticker)
+        # except Exception as e:
+        #     logger.error(e)
         self.order_placer.place_orders(init=True)
 
     def run(self):

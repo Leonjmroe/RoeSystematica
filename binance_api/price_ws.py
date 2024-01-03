@@ -57,6 +57,9 @@ class BinancePriceWebSocket:
                                         on_message=self.on_message,
                                         on_error=self.on_error,
                                         on_close=self.on_close)
-        self.ws.run_forever()
+        try:
+            self.ws.run_forever()
+        except Exception as e:
+            logger.error(e)
 
 

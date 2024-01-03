@@ -156,4 +156,15 @@ class BinanceAPI:
             print(f"An unexpected error occurred: {e}")
 
 
+    def cancel_all_orders(self, symbol):
+        self.client.cancel_all_orders(symbol=symbol)
+
+
+    def close_open_position(self, symbol):
+        positions = self.client.get_open_positions(symbol=symbol)
+        for position in positions:
+            if position['positionAmt'] != '0':
+                order_side = 'SELL' if float(position['positionAmt']) > 0 else 'BUY'
+                self.client.create_order(symbol=symbol, side=order_side, type='MARKET', quantity=abs(float(position['positionAmt'])))
+
 
