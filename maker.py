@@ -1,7 +1,7 @@
 from binance_api.binance_api import BinanceAPI
 from binance_api.binance_price_ws import BinancePriceWebSocket
 from binance_api.binance_order_ws import BinanceOrderWebSocket
-from binance_api.binance_listen_key import get_listen_key
+from binance_ap.binance_listen_key import get_listen_key
 import threading
 import os
 import logging
