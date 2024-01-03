@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="Black">
-    <option name="executionMode" value="BINARY" />
-    <option name="pathToExecutable" value="$USER_HOME$/anaconda3/bin/black" />
-    <option name="sdkUUID" value="cf45358c-7333-46e8-a4d8-be4a78c4a45d" />
-  </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (RoeSystematica)" project-jdk-type="Python SDK" />
-</project>

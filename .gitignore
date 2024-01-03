@@ -1,4 +1,4 @@
-venv/
-.ipnb_checkpoints/
+rs_env/
 .DS_Store
+.ipynb_checkpoints/
 

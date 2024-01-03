@@ -1,9 +1,34 @@
-from binance_api import BinanceAPI
-from binance_price_ws import BinancePriceWebSocket
-from binance_order_ws import BinanceOrderWebSocket
-from binance_listen_key import get_listen_key
+from binance_api.binance_api import BinanceAPI
+from binance_api.binance_price_ws import BinancePriceWebSocket
+from binance_api.binance_order_ws import BinanceOrderWebSocket
+from binance_api.binance_listen_key import get_listen_key
 import threading
 import os
+import logging
+from datetime import datetime
+
+
+
+# Setup logger
+logger = logging.getLogger('MarketMakerLogger')
+logger.setLevel(logging.INFO)  # Set log level
+
+# Create file handler which logs even debug messages
+fh = logging.FileHandler('/logs', f'market_maker_log_{datetime.now().strftime("%H%M%S")}.log')
+fh.setLevel(logging.DEBUG)
+
+# Create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+
+formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+
+
+# Add handlers to logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 
 
@@ -21,20 +46,21 @@ class OrderHandler:
 
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
-            print(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {order['o']['i']}''')
-            self.handle_orders(order, status='FILLED', side=order['o']['S'])
+            logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {order['o']['i']}''')
             self.pull_open_order(order['o']['S'])
+            self.handle_orders(order, status='FILLED', side=order['o']['S'])
         if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
-            print(order)
+            logger.info(order)
 
 
     def order_placed_details(self, order):
-        print(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {order.get('orderId')}''')
+        logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {order.get('orderId')}''')
         self.handle_orders(order, status='PLACED', side=order.get('side'))
 
 
     def handle_orders(self, order, status, side):
         if side == 'BUY':
+
             if status == 'FILLED':
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
@@ -43,19 +69,22 @@ class OrderHandler:
                 else:
                     self.trades.append((order, self.open_shorts[0]))
                     self.open_shorts.pop(0)
-                    print('Trade Complete')
+                    logger.info('Trade Complete')
+
             if status == 'PLACED':
                 self.open_orders['bid'] = order
         if side == 'SELL':
+
             if status == 'FILLED':
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
                     if len(self.open_shorts) == self.max_positions:
                         self.set_stop_loss('BUY')
                 else:
-                    self.trades = ((self.open_longs[0], order))
+                    self.trades.append((self.open_longs[0], order))
                     self.open_longs.pop(0)
-                    print('Trade Complete')
+                    logger.info('Trade Complete')
+
             if status == 'PLACED':
                 self.open_orders['ask'] = order
 
@@ -63,14 +92,14 @@ class OrderHandler:
     def pull_open_order(self, side):
         if side == 'BUY':
             pulled_order = self.api_pull_order('ask')
-            print('Offer pulled. OrderID: ' + str(pulled_order.get('orderId')))
-            print('Long Inventory: ' + str(len(self.open_longs)))
-            print('Short Inventory: ' + str(len(self.open_shorts)))
+            logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId')))
+            logger.info('Long Inventory: ' + str(len(self.open_longs)))
+            logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
-            print('Bid pulled. OrderID: ' + str(pulled_order.get('orderId')))
-            print('Long Inventory: ' + str(len(self.open_longs)))
-            print('Short Inventory: ' + str(len(self.open_shorts)))
+            logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId')))
+            logger.info('Long Inventory: ' + str(len(self.open_longs)))
+            logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
         self.order_placer.place_orders()
 
@@ -80,7 +109,7 @@ class OrderHandler:
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders[side].get('orderId'))
             return pulled_order
         except Exception as e:
-            print(1, e)
+            logger.info(1, e)
 
 
     def set_stop_loss(self, side):
@@ -92,9 +121,9 @@ class OrderHandler:
             else:
                 price = self.order_placer.ask
             self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
-            print('Stop loss order placed.')
+            logger.info('Stop loss order placed.')
         except Exception as e:
-            print(2, e)
+            logger.info(2, e)
 
 
 
