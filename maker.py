@@ -38,7 +38,8 @@ class OrderHandler:
         self.binance_api = binance_api
         self.order_placer = order_placer
         self.max_positions = max_positions
-        self.open_orders = {'ask': None, 'bid': None}
+        self.open_order = {'ask': None, 'bid': None}
+        self.open_stop = {'ask': None, 'bid': None}
         self.open_longs = []
         self.open_shorts = []
         self.trades = []
@@ -49,9 +50,6 @@ class OrderHandler:
             logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
             self.pull_open_order(order['o']['S'])
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
-        if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
-            # logger.info(order)
-            pass
 
 
     def order_placed_details(self, order):
@@ -73,7 +71,8 @@ class OrderHandler:
                     logger.info('Trade Complete. Count: ' + str(len(self.trades)))
                     self.get_inventory()
             if status == 'PLACED':
-                self.open_orders['bid'] = order
+                print(order.get('type'))
+                self.open_order['bid'] = order
         if side == 'SELL':
             if status == 'FILLED':
                 if len(self.open_longs) == 0:
@@ -87,7 +86,8 @@ class OrderHandler:
                     logger.info('Trade Complete. Count: ' + str(len(self.trades)))
                     self.get_inventory()
             if status == 'PLACED':
-                self.open_orders['ask'] = order
+                print(order.get('type'))
+                self.open_order['ask'] = order
 
     def get_inventory(self):
         logger.info('Short Inventory: ' + str(len(self.open_shorts)))
@@ -101,13 +101,17 @@ class OrderHandler:
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
             logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
-        self.open_orders = {'ask': None, 'bid': None}
-        self.order_placer.place_orders()
+        self.open_order = {'ask': None, 'bid': None}
+        if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
+            self.order_placer.place_orders(stop_side=side)
+        else:
+            self.order_placer.place_orders()
+            
 
 
     def api_pull_order(self, side):
         try:    
-            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders[side].get('orderId'))
+            pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_order[side].get('orderId'))
             return pulled_order
         except Exception as e:
             logger.error(e)
@@ -119,10 +123,12 @@ class OrderHandler:
             self.order_placer.get_order_prices()
             if side == 'SELL':
                 price = self.order_placer.bid
+                inventory = len(self.open_shorts)
             else:
                 price = self.order_placer.ask
+                inventory = len(self.open_longs)
             self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
-            logger.info('Stop loss order placed.')
+            logger.info(f'A {side} Market Stop loss order placed of ${order_size} at ${price}. Inventory size stop: {inventory}')
         except Exception as e:
             logger.error(e)
 
@@ -162,13 +168,19 @@ class OrderPlacer:
         else:
             return str(tick).count('0')
 
-    def place_orders(self, init=False):
+    def place_orders(self, init=False, stop_side=None):
         if init:
             self.tick_size = self.get_tick_count(self.binance_api.get_tick_size(self.ticker))
         self.get_order_prices()
         order_size = self.get_btc_order_size()
-        self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
-        self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid)
+        if stop_side == 'SELL':
+            self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid)
+        elif stop_side == 'BUY':
+            self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
+        else:
+            self.binance_api.create_order(symbol=self.ticker, side='SELL', type='LIMIT', quantity=order_size, price=self.ask)
+            self.binance_api.create_order(symbol=self.ticker, side='BUY', type='LIMIT', quantity=order_size, price=self.bid) 
+
 
 
 
