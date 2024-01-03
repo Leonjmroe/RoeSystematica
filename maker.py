@@ -1,7 +1,7 @@
-from binance_api.binance_api import BinanceAPI
-from binance_api.binance_price_ws import BinancePriceWebSocket
-from binance_api.binance_order_ws import BinanceOrderWebSocket
-from binance_ap.binance_listen_key import get_listen_key
+from binance_api.api import BinanceAPI
+from binance_api.price_ws import BinancePriceWebSocket
+from binance_api.order_ws import BinanceOrderWebSocket
+from binance_api.listen_key import get_listen_key
 import threading
 import os
 import logging
@@ -9,24 +9,16 @@ from datetime import datetime
 
 
 
-# Setup logger
+log_file_path = os.path.join('logs/', f'market_maker_log_{datetime.now().strftime("%Y%m%d%H%M%S")}.log')
 logger = logging.getLogger('MarketMakerLogger')
-logger.setLevel(logging.INFO)  # Set log level
-
-# Create file handler which logs even debug messages
-fh = logging.FileHandler('/logs', f'market_maker_log_{datetime.now().strftime("%H%M%S")}.log')
+logger.setLevel(logging.INFO)  
+fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
-
-# Create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
-
 formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
-
-
-# Add handlers to logger
 logger.addHandler(fh)
 logger.addHandler(ch)
 
@@ -109,7 +101,7 @@ class OrderHandler:
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_orders[side].get('orderId'))
             return pulled_order
         except Exception as e:
-            logger.info(1, e)
+            logger.error(1, e)
 
 
     def set_stop_loss(self, side):
@@ -123,7 +115,7 @@ class OrderHandler:
             self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
             logger.info('Stop loss order placed.')
         except Exception as e:
-            logger.info(2, e)
+            logger.error(2, e)
 
 
 
