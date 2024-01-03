@@ -81,7 +81,7 @@ class BinanceAPI:
                 'quantity': quantity,
                 'stopPrice': stop_price
             }
-            order = self.client.create_order(**params)
+            order = self.client.futures_create_order(**params)
             return order
         except BinanceAPIException as e:
             print(f"Binance API Exception: {e}")

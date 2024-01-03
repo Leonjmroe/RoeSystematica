@@ -9,14 +9,26 @@ from datetime import datetime
 
 
 
-log_file_path = os.path.join('logs/', f'market_maker_log_{datetime.now().strftime("%Y%m%d%H%M%S")}.log')
+# Setup file logging
+log_file_path = os.path.join('logs/', f'market_maker_log_{datetime.now().strftime("%H%M%S")}.log')
 logger = logging.getLogger('MarketMakerLogger')
-logger.setLevel(logging.INFO)  
+logger.setLevel(logging.DEBUG)  # Set to DEBUG to capture all levels of logs
+logger.propagate = False  # Prevents log messages from being propagated to the root logger
+
+# Formatter
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - Line: %(lineno)d - %(message)s', datefmt='%H:%M:%S')
+
+# File Handler
 fh = logging.FileHandler(log_file_path)
 fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - Line: %(lineno)d - %(message)s', datefmt='%H:%M:%S')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
+
+# Stream Handler for console output
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)  # Adjust as needed
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
 
@@ -38,7 +50,8 @@ class OrderHandler:
             self.pull_open_order(order['o']['S'])
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
         if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
-            logger.info(order)
+            # logger.info(order)
+            pass
 
 
     def order_placed_details(self, order):
@@ -48,46 +61,46 @@ class OrderHandler:
 
     def handle_orders(self, order, status, side):
         if side == 'BUY':
-
             if status == 'FILLED':
                 if len(self.open_shorts) == 0:
                     self.open_longs.append(order)
+                    self.get_inventory()
                     if len(self.open_longs) == self.max_positions:
                         self.set_stop_loss('SELL')
                 else:
                     self.trades.append((order, self.open_shorts[0]))
                     self.open_shorts.pop(0)
-                    logger.info('Trade Complete')
-
+                    logger.info('Trade Complete. Count: ' + str(len(self.trades)))
+                    self.get_inventory()
             if status == 'PLACED':
                 self.open_orders['bid'] = order
         if side == 'SELL':
-
             if status == 'FILLED':
                 if len(self.open_longs) == 0:
                     self.open_shorts.append(order)
+                    self.get_inventory()
                     if len(self.open_shorts) == self.max_positions:
                         self.set_stop_loss('BUY')
                 else:
                     self.trades.append((self.open_longs[0], order))
                     self.open_longs.pop(0)
-                    logger.info('Trade Complete')
-
+                    logger.info('Trade Complete. Count: ' + str(len(self.trades)))
+                    self.get_inventory()
             if status == 'PLACED':
                 self.open_orders['ask'] = order
+
+    def get_inventory(self):
+        logger.info('Short Inventory: ' + str(len(self.open_shorts)))
+        logger.info('Long Inventory: ' + str(len(self.open_longs)))
 
 
     def pull_open_order(self, side):
         if side == 'BUY':
             pulled_order = self.api_pull_order('ask')
             logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
-            logger.info('Long Inventory: ' + str(len(self.open_longs)))
-            logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
             logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
-            logger.info('Long Inventory: ' + str(len(self.open_longs)))
-            logger.info('Short Inventory: ' + str(len(self.open_shorts)))
         self.open_orders = {'ask': None, 'bid': None}
         self.order_placer.place_orders()
 
