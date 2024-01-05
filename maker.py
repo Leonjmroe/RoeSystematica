@@ -4,32 +4,12 @@ from binance_api.order_ws import BinanceOrderWebSocket
 from binance_api.listen_key import get_listen_key
 import threading
 import os
-import logging
-from datetime import datetime
+from logger import Logger
 
 
-
-# Setup file logging
-log_file_path = os.path.join('logs/', f'market_maker_log_{datetime.now().strftime("%H%M%S")}.log')
-logger = logging.getLogger('MarketMakerLogger')
-logger.setLevel(logging.DEBUG)  # Set to DEBUG to capture all levels of logs
-logger.propagate = False  # Prevents log messages from being propagated to the root logger
-
-# Formatter
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - Line: %(lineno)d - %(message)s', datefmt='%H:%M:%S')
-
-# File Handler
-fh = logging.FileHandler(log_file_path)
-fh.setLevel(logging.DEBUG)
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-
-# Stream Handler for console output
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)  # Adjust as needed
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
+logger_container = Logger()
+logger_container.set_up()
+logger = logger_container.get_logger()
 
 
 
@@ -48,8 +28,11 @@ class OrderHandler:
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
             logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
-            self.pull_open_order(order['o']['S'])
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
+            try:
+                self.pull_open_order(order['o']['S'])
+            except Exception as e:
+                logger.error(e)
 
 
     def order_placed_details(self, order):
@@ -71,7 +54,6 @@ class OrderHandler:
                     logger.info('Trade Complete. Count: ' + str(len(self.trades)))
                     self.get_inventory()
             if status == 'PLACED':
-                print(order.get('type'))
                 self.open_order['bid'] = order
         if side == 'SELL':
             if status == 'FILLED':
@@ -86,7 +68,6 @@ class OrderHandler:
                     logger.info('Trade Complete. Count: ' + str(len(self.trades)))
                     self.get_inventory()
             if status == 'PLACED':
-                print(order.get('type'))
                 self.open_order['ask'] = order
 
     def get_inventory(self):
@@ -97,10 +78,12 @@ class OrderHandler:
     def pull_open_order(self, side):
         if side == 'BUY':
             pulled_order = self.api_pull_order('ask')
-            logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
+            if pulled_order is not None:
+                logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
-            logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
+            if pulled_order is not None:
+                logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
         self.open_order = {'ask': None, 'bid': None}
         if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
             self.order_placer.place_orders(stop_side=side)
@@ -114,7 +97,8 @@ class OrderHandler:
             pulled_order = self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_order[side].get('orderId'))
             return pulled_order
         except Exception as e:
-            logger.error(e)
+            logger.info('Bid filled before being pulled.')
+            return None
 
 
     def set_stop_loss(self, side):
@@ -253,8 +237,8 @@ if __name__ == "__main__":
     market_maker = MarketMakerController(ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=2,
-                                         pip_risk=50,
+                                         pip_spread=0.1,
+                                         pip_risk=500,
                                          max_positions=3)    
     market_maker.run()
 
