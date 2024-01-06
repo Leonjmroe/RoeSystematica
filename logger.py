@@ -7,7 +7,7 @@ from datetime import datetime
 class Logger:
 	def __init__(self):
 		self.log_file_path = os.path.join('logs/', f'market_maker_log_{datetime.now().strftime("%H%M%S")}.log')
-		self.formatter = logging.Formatter('%(asctime)s - %(levelname)s - Line: %(lineno)d - %(message)s\n', datefmt='%H:%M:%S')
+		self.formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - Line: %(lineno)d - %(message)s\n', datefmt='%H:%M:%S')
 		self.logger = logging.getLogger('MarketMakerLogger')
 
 

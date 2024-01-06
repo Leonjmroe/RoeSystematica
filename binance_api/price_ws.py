@@ -1,43 +1,37 @@
 import websocket
 import threading
 import json
-import logging
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 
 class BinancePriceWebSocket:
-    def __init__(self, stream_url):
+    def __init__(self, logger, stream_url):
         self.stream_url = stream_url
         self.ws = None  
         self.callback = None
+        self.logger = logger
 
     def on_message(self, ws, message):
         try:
             data = json.loads(message)
             if 'result' in data and 'id' in data:
-                # logger.info(f"Subscription confirmed: {data}")
-                pass
+                self.logger.info(f"Subscription confirmed: {data}")
             elif 'b' in data and 'B' in data and 'a' in data and 'A' in data:
                 if self.callback:
                     self.callback(data)
             else:
-                # logger.warning(f"Message received without expected keys: {data}")
-                pass
+                self.logger.warning(f"Message received without expected keys: {data}")
         except json.JSONDecodeError as e:
-            pass
-            # logger.error(f"Error decoding JSON: {e}")
+            self.logger.error(f"Error decoding JSON: {e}")
         except Exception as e:
-            pass
-            # logger.error(f"Error in on_message: {e}")
+            self.logger.error(f"Error in on_message: {e}")
 
     def on_error(self, ws, error):
-        logger.error(error)
+        self.logger.error(error)
 
     def on_close(self, ws, close_status_code, close_msg):
-        logger.info("### WebSocket closed ###")
+        self.logger.info("### WebSocket closed ###")
 
     def on_open(self, ws):
         def run(*args):
@@ -48,7 +42,7 @@ class BinancePriceWebSocket:
                 ],
                 "id": 1
             }))
-            # logger.info("BinancePriceWebSocket connection opened and subscribed to streams")
+            self.logger.info("BinancePriceWebSocket connection opened and subscribed to streams")
         threading.Thread(target=run).start()
 
     def run_forever(self):

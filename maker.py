@@ -13,6 +13,7 @@ logger = logger_container.get_logger()
 
 
 
+
 class OrderHandler:
     def __init__(self, binance_api, order_placer, max_positions):
         self.binance_api = binance_api
@@ -27,7 +28,8 @@ class OrderHandler:
 
     def order_listener(self, order):
         if order['o']['X'] == 'FILLED':
-            logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
+            #logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
+            logger.info(f'''{order['o']['S']} {order['o']['o']} FILLED. OrderID: {str(order['o']['i'])[-3:]}''')
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
             try:
                 self.pull_open_order(order['o']['S'])
@@ -36,7 +38,8 @@ class OrderHandler:
 
 
     def order_placed_details(self, order):
-        logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {str(order.get('orderId'))[-3:]}''')
+        #logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {str(order.get('orderId'))[-3:]}''')
+        logger.info(f'''{order.get('side')} {order.get('type')} PLACED. OrderID: {str(order.get('orderId'))[-3:]}''')
         self.handle_orders(order, status='PLACED', side=order.get('side'))
 
 
@@ -76,6 +79,18 @@ class OrderHandler:
 
 
     def pull_open_order(self, side):
+        if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
+            stop_side = side
+        elif self.open_stop['ask'] is not None:
+            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_stop['ask'].get('orderId'))
+            logger.info(f'''Market buy stop order pulled. OrderID: {self.open_stop['ask'].get('orderId')[-3:]}''')
+            stop_side = None
+        elif self.open_stop['bid'] is not None:
+            self.binance_api.cancel_order(symbol=self.order_placer.ticker, order_id=self.open_stop['bid'].get('orderId'))
+            logger.info(f'''Market sell stop order pulled. OrderID: {self.open_stop['bid'].get('orderId')[-3:]}''')
+            stop_side = None
+        else:
+            stop_side = None
         if side == 'BUY':
             pulled_order = self.api_pull_order('ask')
             if pulled_order is not None:
@@ -85,10 +100,7 @@ class OrderHandler:
             if pulled_order is not None:
                 logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
         self.open_order = {'ask': None, 'bid': None}
-        if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
-            self.order_placer.place_orders(stop_side=side)
-        else:
-            self.order_placer.place_orders()
+        self.order_placer.place_orders(stop_side=stop_side)
             
 
 
@@ -107,14 +119,29 @@ class OrderHandler:
             self.order_placer.get_order_prices()
             if side == 'SELL':
                 price = self.order_placer.bid
-                inventory = len(self.open_shorts)
+                inventory = len(self.open_longs)
             else:
                 price = self.order_placer.ask
-                inventory = len(self.open_longs)
-            self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
-            logger.info(f'A {side} Market Stop loss order placed of ${order_size} at ${price}. Inventory size stop: {inventory}')
+                inventory = len(self.open_shorts)
+            stop_order = self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
+            if stop_order is not None:
+                if side == 'SELL':
+                    self.open_stop['bid'] = stop_order
+                else:
+                    self.open_stop['ask'] = stop_order
+                logger.info(f'{side} market stop order placed. Inventory size stop: {inventory}')
+            else:
+                logger.info('Stop order failed to be placed')
+                self.manual_stop_order(side, order_size, price, inventory)
         except Exception as e:
             logger.error(e)
+
+
+    def manual_stop_order(self, side):
+        self.binance_api.create_order(symbol=self.order_placer.ticker, side=side, type='MARKET', quantity=order_size)
+        logger.info(f'Manual market stop order executed of inventory size {inventory}')
+        self.get_inventory()
+
 
 
 
@@ -190,14 +217,14 @@ class PriceHandler:
 
 
 class MarketMakerController:
-    def __init__(self, ticker, ws_price_stream, pip_spread, pip_risk, max_positions, api_key):
-        self.binance_api = BinanceAPI()
+    def __init__(self, logger, ticker, ws_price_stream, pip_spread, pip_risk, max_positions, api_key):
+        self.binance_api = BinanceAPI(logger)
         self.price_handler = PriceHandler()
         self.order_placer = OrderPlacer(self.binance_api, self.price_handler, ticker, pip_spread, pip_risk)
         self.order_handler = OrderHandler(self.binance_api, self.order_placer, max_positions)
-        self.binance_price_ws = BinancePriceWebSocket(ws_price_stream)
+        self.binance_price_ws = BinancePriceWebSocket(logger, ws_price_stream)
         self.api_key = api_key
-        self.binance_order_ws = BinanceOrderWebSocket(self.listen_key())
+        self.binance_order_ws = BinanceOrderWebSocket(logger, self.listen_key())
         self.ticker = ticker
 
     def start_price_ws(self):
@@ -234,11 +261,12 @@ class MarketMakerController:
 
 
 if __name__ == "__main__":
-    market_maker = MarketMakerController(ticker='BTCUSDT',
+    market_maker = MarketMakerController(logger=logger,
+                                         ticker='BTCUSDT',
                                          ws_price_stream="wss://stream.binancefuture.com/ws/btcusdt_perpetual@bookTicker",
                                          api_key=os.getenv('API_KEY_TEST'),
-                                         pip_spread=0.1,
-                                         pip_risk=500,
+                                         pip_spread=3,
+                                         pip_risk=250,
                                          max_positions=3)    
     market_maker.run()
 
