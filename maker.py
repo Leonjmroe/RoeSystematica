@@ -34,6 +34,7 @@ class OrderHandler:
             try:
                 self.pull_open_order(order['o']['S'])
             except Exception as e:
+                logger.info(order)
                 logger.error(e)
 
 
