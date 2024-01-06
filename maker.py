@@ -31,7 +31,7 @@ class OrderHandler:
             #logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
             logger.info(f'''{order['o']['S']} {order['o']['o']} FILLED. OrderID: {str(order['o']['i'])[-3:]}''')
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
-            try:
+            try:3
                 self.pull_open_order(order['o']['S'])
             except Exception as e:
                 logger.info(order)
