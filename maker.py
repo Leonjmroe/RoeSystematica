@@ -4,7 +4,7 @@ from binance_api.order_ws import BinanceOrderWebSocket
 from binance_api.listen_key import get_listen_key
 import threading
 import os
-from logger import Logger
+from utils.logger import Logger
 
 
 logger_container = Logger()
@@ -24,6 +24,7 @@ class OrderHandler:
         self.open_longs = []
         self.open_shorts = []
         self.trades = []
+        self.race_count = 0
 
 
     def order_listener(self, order):
@@ -31,7 +32,7 @@ class OrderHandler:
             #logger.info(f'''{order['o']['s']} {order['o']['S']} {order['o']['o']} order for ${round(float(order['o']['p']) * float(order['o']['q']))} FILLED at {order['o']['p']}. OrderID: {str(order['o']['i'])[-3:]}''')
             logger.info(f'''{order['o']['S']} {order['o']['o']} FILLED. OrderID: {str(order['o']['i'])[-3:]}''')
             self.handle_orders(order, status='FILLED', side=order['o']['S'])
-            try:3
+            try:
                 self.pull_open_order(order['o']['S'])
             except Exception as e:
                 logger.info(order)
@@ -39,6 +40,7 @@ class OrderHandler:
 
 
     def order_placed_details(self, order):
+        logger.info(order)
         #logger.info(f'''{order.get('symbol')} {order.get('side')} {order.get('type')} order for ${round(float(order.get('origQty')) * float(order.get('price')))} PLACED at {order.get('price')}. OrderID: {str(order.get('orderId'))[-3:]}''')
         logger.info(f'''{order.get('side')} {order.get('type')} PLACED. OrderID: {str(order.get('orderId'))[-3:]}''')
         self.handle_orders(order, status='PLACED', side=order.get('side'))
@@ -79,6 +81,7 @@ class OrderHandler:
         logger.info('Long Inventory: ' + str(len(self.open_longs)))
 
 
+
     def pull_open_order(self, side):
         if len(self.open_longs) == self.max_positions or len(self.open_longs) == self.max_positions:
             stop_side = side
@@ -96,12 +99,21 @@ class OrderHandler:
             pulled_order = self.api_pull_order('ask')
             if pulled_order is not None:
                 logger.info('Offer pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
+                self.open_order = {'ask': None, 'bid': None}
+                self.order_placer.place_orders(stop_side=stop_side)
+            else:
+                self.race_count += 1
         if side == 'SELL':
             pulled_order = self.api_pull_order('bid')
             if pulled_order is not None:
                 logger.info('Bid pulled. OrderID: ' + str(pulled_order.get('orderId'))[-3:])
-        self.open_order = {'ask': None, 'bid': None}
-        self.order_placer.place_orders(stop_side=stop_side)
+                self.open_order = {'ask': None, 'bid': None}
+                self.order_placer.place_orders(stop_side=stop_side)
+            else:
+                self.race_count += 1
+        if self.race_count == 2:
+            self.race_count = 0
+            self.order_placer.place_orders(stop_side=None)
             
 
 
@@ -119,10 +131,10 @@ class OrderHandler:
             order_size = abs(float(self.binance_api.get_open_positions(self.order_placer.ticker)[0].get('positionAmt')))
             self.order_placer.get_order_prices()
             if side == 'SELL':
-                price = self.order_placer.bid
+                price = self.order_placer.bid - 3000
                 inventory = len(self.open_longs)
             else:
-                price = self.order_placer.ask
+                price = self.order_placer.ask + 3000
                 inventory = len(self.open_shorts)
             stop_order = self.binance_api.create_stop_market_order(symbol=self.order_placer.ticker, side=side, quantity=order_size, stop_price=price)
             if stop_order is not None:
@@ -130,9 +142,7 @@ class OrderHandler:
                     self.open_stop['bid'] = stop_order
                 else:
                     self.open_stop['ask'] = stop_order
-                logger.info(f'{side} market stop order placed. Inventory size stop: {inventory}')
             else:
-                logger.info('Stop order failed to be placed')
                 self.manual_stop_order(side, order_size, price, inventory)
         except Exception as e:
             logger.error(e)
