@@ -3,3 +3,4 @@ rs_env/
 .ipynb_checkpoints/
 logs/
 __pycache__/
+.env
