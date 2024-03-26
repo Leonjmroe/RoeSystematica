@@ -2,4 +2,4 @@ rs_env/
 .DS_Store
 .ipynb_checkpoints/
 logs/
-__pychache__/
+__pycache__/
